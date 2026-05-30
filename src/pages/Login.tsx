@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { flushSync } from 'react-dom';
 import toast from 'react-hot-toast';
 import { authApi } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
@@ -16,9 +17,15 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await authApi.login(email, password);
-      login(res.data.data);
-      toast.success(`Welcome back, ${res.data.data.firstName}!`);
-      navigate(res.data.data.role === 'ADMIN' ? '/admin/dashboard' : '/products');
+      const data = res.data.data;
+
+      // flushSync ensures Zustand store is committed before navigate fires
+      flushSync(() => {
+        login(data);
+      });
+
+      toast.success(`Welcome back${data.firstName ? `, ${data.firstName}` : ''}!`);
+      navigate(data.role === 'ADMIN' ? '/admin/dashboard' : '/products', { replace: true });
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Login failed';
       toast.error(msg);
