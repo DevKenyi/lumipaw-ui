@@ -45,8 +45,9 @@ function RequireAuth({ admin = false }: { admin?: boolean }) {
 }
 
 function GuestOnly() {
-  const { isAuthenticated } = useAuthStore();
-  return isAuthenticated ? <Navigate to="/" replace /> : <Outlet />;
+  const { isAuthenticated, isAdmin } = useAuthStore();
+  if (isAuthenticated) return <Navigate to={isAdmin ? '/admin/dashboard' : '/products'} replace />;
+  return <Outlet />;
 }
 
 export default function App() {
