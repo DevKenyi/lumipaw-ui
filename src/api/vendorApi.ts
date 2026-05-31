@@ -38,6 +38,9 @@ export const vendorApi = {
   resubmitProduct: (id: string, data: ProductInput) =>
     api.put<ApiResponse<Product>>(`/api/vendor/products/${id}`, data),
 
+  editProduct: (id: string, data: ProductInput) =>
+    api.patch<ApiResponse<Product>>(`/api/vendor/products/${id}`, data),
+
   downloadBulkTemplate: () =>
     api.get('/api/vendor/products/bulk/template', { responseType: 'blob' }),
 

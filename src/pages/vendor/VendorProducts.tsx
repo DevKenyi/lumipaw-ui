@@ -23,10 +23,15 @@ export default function VendorProducts() {
     queryFn: () => vendorApi.myProducts({ size: 50 }),
   });
 
-  const resubmitMutation = useMutation({
-    mutationFn: () => vendorApi.resubmitProduct(editing!.id, { ...form, variants }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['vendor-products'] }); toast.success('Resubmitted for review'); setEditing(null); },
-    onError: () => toast.error('Failed to resubmit'),
+  const saveMutation = useMutation({
+    mutationFn: () => {
+      const payload = { ...form, variants };
+      return editing!.approvalStatus === 'REJECTED'
+        ? vendorApi.resubmitProduct(editing!.id, payload)
+        : vendorApi.editProduct(editing!.id, payload);
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['vendor-products'] }); toast.success('Product updated and submitted for review'); setEditing(null); },
+    onError: () => toast.error('Failed to save product'),
   });
 
   const openEdit = (p: Product) => {
@@ -75,11 +80,9 @@ export default function VendorProducts() {
                   </div>
                 )}
               </div>
-              {p.approvalStatus === 'REJECTED' && (
-                <button onClick={() => openEdit(p)} className="btn-secondary text-xs py-2 px-3 shrink-0 self-start">
-                  <Pencil className="h-3.5 w-3.5" /> Edit & resubmit
-                </button>
-              )}
+              <button onClick={() => openEdit(p)} className="btn-secondary text-xs py-2 px-3 shrink-0 self-start">
+                <Pencil className="h-3.5 w-3.5" /> Edit
+              </button>
             </div>
           ))}
           {products.length === 0 && (
@@ -91,9 +94,9 @@ export default function VendorProducts() {
       {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
           <div className="bg-white rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-1">Edit & Resubmit</h2>
-            <p className="text-sm text-gray-500 mb-5">Correct the issues and resubmit for review.</p>
-            <form onSubmit={(e) => { e.preventDefault(); resubmitMutation.mutate(); }} className="space-y-4">
+            <h2 className="text-xl font-bold text-gray-900 mb-1">Edit Product</h2>
+            <p className="text-sm text-gray-500 mb-5">Changes will be submitted for admin review before going live.</p>
+            <form onSubmit={(e) => { e.preventDefault(); saveMutation.mutate(); }} className="space-y-4">
               <div><label className="block text-sm font-medium text-gray-700 mb-1.5">Name</label>
                 <input value={form.name} onChange={setField('name')} className="input" required /></div>
               <div><label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
@@ -135,8 +138,8 @@ export default function VendorProducts() {
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setEditing(null)} className="btn-secondary flex-1">Cancel</button>
-                <button type="submit" disabled={resubmitMutation.isPending} className="btn-primary flex-1">
-                  {resubmitMutation.isPending ? 'Submitting…' : 'Resubmit for review'}
+                <button type="submit" disabled={saveMutation.isPending} className="btn-primary flex-1">
+                  {saveMutation.isPending ? 'Saving…' : 'Save & submit for review'}
                 </button>
               </div>
             </form>
