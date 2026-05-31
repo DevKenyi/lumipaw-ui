@@ -13,16 +13,30 @@ export interface PageResponse<T> {
   last: boolean;
 }
 
+// Vendor
+export interface Vendor {
+  id: string;
+  userId: string;
+  businessName: string;
+  description: string;
+  phone: string;
+  email: string;
+  active: boolean;
+  createdAt: string;
+}
+
 // Auth
 export interface LoginResponse {
   token: string;
   tokenType: string;
   userId: string;
   email: string;
-  role: 'CUSTOMER' | 'ADMIN';
+  role: 'CUSTOMER' | 'VENDOR' | 'ADMIN';
   firstName: string;
   lastName: string;
 }
+
+export type ApprovalStatus = 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED';
 
 // Product
 export interface ProductVariant {
@@ -47,6 +61,10 @@ export interface Product {
   inStock: boolean;
   createdAt: string;
   variants: ProductVariant[];
+  vendorId: string | null;
+  vendorBusinessName: string | null;
+  approvalStatus: ApprovalStatus;
+  rejectionReason: string | null;
 }
 
 // Customer

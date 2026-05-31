@@ -1,10 +1,11 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, Users, FileText, LogOut, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, FileText, Store, LogOut, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
 const nav = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/products', label: 'Products', icon: Package },
+  { to: '/admin/vendors', label: 'Vendors', icon: Store },
   { to: '/admin/orders', label: 'Orders', icon: ShoppingBag },
   { to: '/admin/customers', label: 'Customers', icon: Users },
   { to: '/admin/invoices', label: 'Invoices', icon: FileText },

@@ -66,6 +66,10 @@ export default function Login() {
           Don't have an account?{' '}
           <Link to="/register" className="text-brand-600 font-semibold hover:underline">Create one</Link>
         </p>
+        <p className="text-center text-sm text-gray-400 mt-2">
+          Selling pet products?{' '}
+          <Link to="/register-vendor" className="text-amber-600 font-semibold hover:underline">Become a vendor</Link>
+        </p>
       </div>
     </div>
   );
