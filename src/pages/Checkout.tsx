@@ -5,8 +5,16 @@ import { ordersApi } from '../api/orders';
 import { paymentsApi } from '../api/payments';
 import { formatNGN } from '../utils/format';
 import ProductImage from '../components/ui/ProductImage';
+import { DELIVERY_ZONES, OTHER_STATES_FEE, isZonedState, getDeliveryFee } from '../utils/deliveryZones';
 
-const DELIVERY_FEE = 1500;
+const NIGERIAN_STATES = [
+  'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa',
+  'Benue', 'Borno', 'Cross River', 'Delta', 'Ebonyi', 'Edo',
+  'Ekiti', 'Enugu', 'Abuja', 'Gombe', 'Imo', 'Jigawa',
+  'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara',
+  'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun',
+  'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara',
+];
 
 export default function Checkout() {
   const { items, subtotal, clearCart } = useCartStore();
@@ -18,9 +26,22 @@ export default function Checkout() {
   const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [field]: e.target.value }));
 
+  const handleStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setForm((f) => ({ ...f, deliveryState: e.target.value, deliveryCity: '' }));
+  };
+
   const sub = subtotal();
   const serviceFee = Math.round(sub * 0.05);
-  const total = sub + DELIVERY_FEE + serviceFee;
+
+  const deliveryFee = (() => {
+    if (!form.deliveryState) return 0;
+    if (isZonedState(form.deliveryState)) {
+      return form.deliveryCity ? getDeliveryFee(form.deliveryState, form.deliveryCity) : 0;
+    }
+    return OTHER_STATES_FEE;
+  })();
+
+  const total = sub + serviceFee + deliveryFee;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,10 +57,8 @@ export default function Checkout() {
         ...form,
       });
       const orderId = orderRes.data.data.id;
-
       const payRes = await paymentsApi.initialize(orderId);
       const { authorizationUrl } = payRes.data.data;
-
       clearCart();
       window.location.href = authorizationUrl;
     } catch (err: unknown) {
@@ -61,26 +80,50 @@ export default function Checkout() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Delivery address</label>
-                <input value={form.deliveryAddress} onChange={set('deliveryAddress')} className="input" placeholder="12 Admiralty Way, Lekki" required />
+                <input value={form.deliveryAddress} onChange={set('deliveryAddress')} className="input"
+                  placeholder="House number, street name" required />
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">City</label>
-                  <input value={form.deliveryCity} onChange={set('deliveryCity')} className="input" placeholder="Lagos" required />
-                </div>
-                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">State</label>
-                  <select value={form.deliveryState} onChange={set('deliveryState')} className="input" required>
+                  <select value={form.deliveryState} onChange={handleStateChange} className="input" required>
                     <option value="">Select state</option>
-                    {['Lagos', 'Abuja', 'Rivers', 'Oyo', 'Kano', 'Kaduna', 'Anambra', 'Ogun', 'Delta', 'Edo'].map((s) => (
+                    {NIGERIAN_STATES.map((s) => (
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
                 </div>
+
+                <div>
+                  {isZonedState(form.deliveryState) ? (
+                    <>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Area / Location</label>
+                      <select value={form.deliveryCity} onChange={set('deliveryCity')} className="input" required>
+                        <option value="">Select area</option>
+                        {DELIVERY_ZONES[form.deliveryState].map((zone) => (
+                          <optgroup key={zone.name} label={`${zone.name} — ${formatNGN(zone.fee)}`}>
+                            {zone.locations.map((loc) => (
+                              <option key={loc} value={loc}>{loc}</option>
+                            ))}
+                          </optgroup>
+                        ))}
+                      </select>
+                    </>
+                  ) : (
+                    <>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">City</label>
+                      <input value={form.deliveryCity} onChange={set('deliveryCity')} className="input"
+                        placeholder="e.g. Port Harcourt" required />
+                    </>
+                  )}
+                </div>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Order notes (optional)</label>
-                <textarea value={form.notes} onChange={set('notes')} className="input resize-none" rows={2} placeholder="Any special delivery instructions?" />
+                <textarea value={form.notes} onChange={set('notes')} className="input resize-none" rows={2}
+                  placeholder="Any special delivery instructions?" />
               </div>
             </div>
           </div>
@@ -98,7 +141,7 @@ export default function Checkout() {
           </div>
 
           <button type="submit" disabled={loading || items.length === 0} className="btn-primary w-full text-base py-4">
-            {loading ? 'Processing…' : `Pay ${formatNGN(total)} securely`}
+            {loading ? 'Processing…' : deliveryFee > 0 ? `Pay ${formatNGN(total)} securely` : 'Select delivery area to continue'}
           </button>
         </form>
 
@@ -122,12 +165,24 @@ export default function Checkout() {
             })}
           </div>
           <div className="border-t border-gray-100 pt-4 space-y-2 text-sm">
-            <div className="flex justify-between text-gray-500"><span>Subtotal</span><span>{formatNGN(sub)}</span></div>
-            <div className="flex justify-between text-gray-500"><span>Delivery</span><span>{formatNGN(DELIVERY_FEE)}</span></div>
-            <div className="flex justify-between text-gray-500"><span>Service fee (5%)</span><span>{formatNGN(serviceFee)}</span></div>
-            <div className="flex justify-between font-bold text-gray-900 text-base pt-2 border-t border-gray-100">
-              <span>Total</span><span>{formatNGN(total)}</span>
+            <div className="flex justify-between text-gray-500">
+              <span>Subtotal</span><span>{formatNGN(sub)}</span>
             </div>
+            <div className="flex justify-between text-gray-500">
+              <span>Service fee (5%)</span><span>{formatNGN(serviceFee)}</span>
+            </div>
+            <div className="flex justify-between text-gray-500">
+              <span>Delivery</span>
+              {deliveryFee > 0
+                ? <span>{formatNGN(deliveryFee)}</span>
+                : <span className="text-gray-400 italic text-xs">Select area</span>
+              }
+            </div>
+            {deliveryFee > 0 && (
+              <div className="flex justify-between font-bold text-gray-900 text-base pt-2 border-t border-gray-100">
+                <span>Total</span><span>{formatNGN(total)}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

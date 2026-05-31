@@ -6,8 +6,6 @@ import { formatNGN } from '../utils/format';
 import EmptyState from '../components/ui/EmptyState';
 import ProductImage from '../components/ui/ProductImage';
 
-const DELIVERY_FEE = 1500;
-
 export default function Cart() {
   const { items, removeItem, updateQuantity, subtotal } = useCartStore();
   const { isAuthenticated } = useAuthStore();
@@ -15,7 +13,7 @@ export default function Cart() {
 
   const sub = subtotal();
   const serviceFee = Math.round(sub * 0.05);
-  const total = sub + DELIVERY_FEE + serviceFee;
+  const total = sub + serviceFee;
 
   const handleCheckout = () => {
     if (!isAuthenticated) { navigate('/login'); return; }
@@ -93,13 +91,14 @@ export default function Cart() {
                 <span>Subtotal</span><span className="font-medium text-gray-900">{formatNGN(sub)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span>Delivery fee</span><span className="font-medium text-gray-900">{formatNGN(DELIVERY_FEE)}</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
                 <span>Service fee (5%)</span><span className="font-medium text-gray-900">{formatNGN(serviceFee)}</span>
               </div>
+              <div className="flex justify-between text-gray-600">
+                <span>Delivery fee</span><span className="text-xs text-gray-400 self-center">Calculated at checkout</span>
+              </div>
               <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-gray-900">
-                <span>Total</span><span className="text-lg">{formatNGN(total)}</span>
+                <span>Total <span className="text-xs font-normal text-gray-400">(excl. delivery)</span></span>
+                <span className="text-lg">{formatNGN(total)}</span>
               </div>
             </div>
             <button onClick={handleCheckout} className="btn-primary w-full text-base py-3">
