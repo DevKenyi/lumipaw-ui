@@ -40,7 +40,8 @@ export default function AdminVendors() {
 
       {isLoading ? <div className="flex justify-center py-20"><Spinner size="lg" /></div> : (
         <div className="card overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[600px]">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
                 {['Business', 'Email', 'Phone', 'Status', 'Applied', 'Actions'].map((h) => (
@@ -80,6 +81,7 @@ export default function AdminVendors() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </AdminLayout>

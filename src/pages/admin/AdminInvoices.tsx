@@ -27,7 +27,8 @@ export default function AdminInvoices() {
 
       {isLoading ? <div className="flex justify-center py-20"><Spinner size="lg" /></div> : (
         <div className="card overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[480px]">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
                 {['Invoice #', 'Customer', 'Amount', 'Status', 'Generated'].map((h) => (
@@ -47,6 +48,7 @@ export default function AdminInvoices() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

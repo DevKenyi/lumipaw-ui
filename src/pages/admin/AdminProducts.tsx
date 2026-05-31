@@ -7,6 +7,7 @@ import { adminVendorApi } from '../../api/vendorApi';
 import AdminLayout from '../../components/layout/AdminLayout';
 import { formatNGN } from '../../utils/format';
 import Spinner from '../../components/ui/Spinner';
+import ProductImage from '../../components/ui/ProductImage';
 import type { Product, ProductVariantInput } from '../../types';
 
 const EMPTY_FORM = {
@@ -133,7 +134,7 @@ export default function AdminProducts() {
             <div className="card p-12 text-center text-gray-400">No pending submissions.</div>
           ) : pendingProducts.map((p) => (
             <div key={p.id} className="card p-4 flex gap-4">
-              <img src={p.imageUrl} alt={p.name} className="w-16 h-16 rounded-xl object-cover bg-gray-100 shrink-0" />
+              <ProductImage src={p.imageUrl} alt={p.name} className="w-16 h-16 rounded-xl object-cover bg-gray-100 shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between">
                   <div>
@@ -170,7 +171,8 @@ export default function AdminProducts() {
 
       {tab === 'products' && isLoading ? <div className="flex justify-center py-20"><Spinner size="lg" /></div> : tab === 'products' && (
         <div className="card overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[600px]">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
                 {['Product', 'Category', 'Price / Variants', 'Stock', 'Status', ''].map((h) => (
@@ -183,7 +185,7 @@ export default function AdminProducts() {
                 <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <img src={p.imageUrl} alt={p.name} className="w-10 h-10 rounded-lg object-cover bg-gray-100" />
+                      <ProductImage src={p.imageUrl} alt={p.name} className="w-10 h-10 rounded-lg object-cover bg-gray-100" />
                       <p className="font-medium text-gray-900 truncate max-w-[180px]">{p.name}</p>
                     </div>
                   </td>
@@ -224,6 +226,7 @@ export default function AdminProducts() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

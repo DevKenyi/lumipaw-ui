@@ -4,6 +4,7 @@ import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { formatNGN } from '../utils/format';
 import EmptyState from '../components/ui/EmptyState';
+import ProductImage from '../components/ui/ProductImage';
 
 const DELIVERY_FEE = 1500;
 const SERVICE_FEE = 200;
@@ -44,8 +45,8 @@ export default function Cart() {
             const price = variant ? variant.price : product.price;
             return (
               <div key={`${product.id}:${variant?.id ?? 'base'}`} className="card p-4 flex gap-4">
-                <img
-                  src={product.imageUrl || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=200'}
+                <ProductImage
+                  src={product.imageUrl}
                   alt={product.name}
                   className="w-20 h-20 rounded-xl object-cover bg-gray-50 shrink-0"
                 />

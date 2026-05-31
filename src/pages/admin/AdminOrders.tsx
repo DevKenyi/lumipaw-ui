@@ -37,7 +37,8 @@ export default function AdminOrders() {
 
       {isLoading ? <div className="flex justify-center py-20"><Spinner size="lg" /></div> : (
         <div className="card overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[700px]">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
                 {['Order', 'Customer', 'Items', 'Total', 'Payment', 'Status', 'Date', 'Action'].map((h) => (
@@ -71,6 +72,7 @@ export default function AdminOrders() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

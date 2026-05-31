@@ -21,7 +21,7 @@ export default function AdminCustomers() {
 
   return (
     <AdminLayout>
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
           <p className="text-gray-500 mt-1">{data?.data.data.totalElements ?? 0} registered customers</p>
@@ -29,13 +29,14 @@ export default function AdminCustomers() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-            placeholder="Search customers…" className="input pl-9 w-64" />
+            placeholder="Search customers…" className="input pl-9 w-full sm:w-64" />
         </div>
       </div>
 
       {isLoading ? <div className="flex justify-center py-20"><Spinner size="lg" /></div> : (
         <div className="card overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[560px]">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
                 {['Name', 'Email', 'Phone', 'City', 'State', 'Joined'].map((h) => (
@@ -63,6 +64,7 @@ export default function AdminCustomers() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

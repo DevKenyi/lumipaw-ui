@@ -5,6 +5,7 @@ import { formatNGN, formatDateTime } from '../utils/format';
 import Badge from '../components/ui/Badge';
 import Spinner from '../components/ui/Spinner';
 import EmptyState from '../components/ui/EmptyState';
+import ProductImage from '../components/ui/ProductImage';
 
 export default function Orders() {
   const { data, isLoading } = useQuery({
@@ -43,7 +44,7 @@ export default function Orders() {
 
               <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
                 {order.items.slice(0, 3).map((item) => (
-                  <img key={item.id} src={item.productImageUrl} alt={item.productName}
+                  <ProductImage key={item.id} src={item.productImageUrl} alt={item.productName}
                     className="w-14 h-14 rounded-xl object-cover bg-gray-50 border border-gray-100 shrink-0" />
                 ))}
                 {order.items.length > 3 && (

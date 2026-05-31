@@ -4,6 +4,7 @@ import { useCartStore } from '../store/cartStore';
 import { ordersApi } from '../api/orders';
 import { paymentsApi } from '../api/payments';
 import { formatNGN } from '../utils/format';
+import ProductImage from '../components/ui/ProductImage';
 
 const DELIVERY_FEE = 1500;
 const SERVICE_FEE = 200;
@@ -109,7 +110,7 @@ export default function Checkout() {
               const price = variant ? variant.price : product.price;
               return (
                 <div key={`${product.id}:${variant?.id ?? 'base'}`} className="flex gap-3">
-                  <img src={product.imageUrl} alt={product.name} className="w-12 h-12 rounded-lg object-cover bg-gray-50 shrink-0" />
+                  <ProductImage src={product.imageUrl} alt={product.name} className="w-12 h-12 rounded-lg object-cover bg-gray-50 shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
                     {variant && <p className="text-xs text-brand-600">{variant.label}</p>}
