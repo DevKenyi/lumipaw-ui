@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, Users, FileText, Store, LogOut, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, FileText, Store, LogOut, ChevronRight, Wallet } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
 const nav = [
@@ -9,6 +9,7 @@ const nav = [
   { to: '/admin/orders', label: 'Orders', icon: ShoppingBag },
   { to: '/admin/customers', label: 'Customers', icon: Users },
   { to: '/admin/invoices', label: 'Invoices', icon: FileText },
+  { to: '/admin/payouts', label: 'Payouts', icon: Wallet },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

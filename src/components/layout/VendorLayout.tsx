@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, PlusCircle, Upload, LogOut, ChevronRight, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Package, PlusCircle, Upload, LogOut, ChevronRight, Menu, X, TrendingUp } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
 const nav = [
@@ -8,6 +8,7 @@ const nav = [
   { to: '/vendor/products', label: 'My Products', icon: Package },
   { to: '/vendor/submit', label: 'Submit', icon: PlusCircle },
   { to: '/vendor/bulk-upload', label: 'Bulk Upload', icon: Upload },
+  { to: '/vendor/earnings', label: 'Earnings', icon: TrendingUp },
 ];
 
 export default function VendorLayout({ children }: { children: React.ReactNode }) {
