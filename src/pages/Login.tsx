@@ -25,7 +25,8 @@ export default function Login() {
       });
 
       toast.success(`Welcome back${data.firstName ? `, ${data.firstName}` : ''}!`);
-      navigate(data.role === 'ADMIN' ? '/admin/dashboard' : '/products', { replace: true });
+      const dest = data.role === 'ADMIN' ? '/admin/dashboard' : data.role === 'VENDOR' ? '/vendor/dashboard' : '/products';
+      navigate(dest, { replace: true });
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Login failed';
       toast.error(msg);
