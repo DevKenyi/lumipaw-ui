@@ -35,7 +35,7 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
         )}
         <div className="absolute top-3 left-3">
-          <span className="badge bg-brand-100 text-brand-700">{product.category.replace('_', ' ')}</span>
+          <span className="badge bg-brand-100 text-brand-700">{product.category.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</span>
         </div>
       </div>
 
