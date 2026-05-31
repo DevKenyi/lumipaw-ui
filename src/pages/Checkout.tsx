@@ -55,7 +55,7 @@ export default function Checkout() {
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-6">
+        <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-6 order-2 lg:order-1">
           <div className="card p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-4">Delivery details</h2>
             <div className="space-y-4">
@@ -103,7 +103,7 @@ export default function Checkout() {
         </form>
 
         {/* Order summary */}
-        <div className="card p-6 h-fit sticky top-24">
+        <div className="card p-6 h-fit lg:sticky lg:top-24 order-1 lg:order-2">
           <h2 className="text-lg font-bold text-gray-900 mb-4">Your order</h2>
           <div className="space-y-3 mb-4">
             {items.map(({ product, variant, quantity }) => {
