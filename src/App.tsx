@@ -17,6 +17,7 @@ import Register from './pages/Register';
 import Orders from './pages/Orders';
 import OrderDetail from './pages/OrderDetail';
 import Profile from './pages/Profile';
+import VendorStorefront from './pages/VendorStorefront';
 
 // Admin
 import Dashboard from './pages/admin/Dashboard';
@@ -82,6 +83,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />
             <Route path="/products/:id" element={<ProductDetail />} />
+            <Route path="/vendors/:id" element={<VendorStorefront />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
 

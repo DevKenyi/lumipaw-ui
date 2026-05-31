@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, X, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, X, CheckCircle, XCircle, AlertCircle, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { productsApi } from '../../api/products';
 import { adminVendorApi } from '../../api/vendorApi';
@@ -22,6 +22,7 @@ export default function AdminProducts() {
   const [tab, setTab] = useState<'products' | 'submissions'>('products');
   const [rejectModal, setRejectModal] = useState<Product | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -133,39 +134,139 @@ export default function AdminProducts() {
           {pendingProducts.length === 0 ? (
             <div className="card p-12 text-center text-gray-400">No pending submissions.</div>
           ) : pendingProducts.map((p) => (
-            <div key={p.id} className="card p-4 flex gap-4">
-              <ProductImage src={p.imageUrl} alt={p.name} className="w-16 h-16 rounded-xl object-cover bg-gray-100 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-semibold text-gray-900">{p.name}</p>
-                    <p className="text-xs text-gray-500">{p.category.replace(/_/g, ' ')} · {formatNGN(p.price)}</p>
-                    {p.vendorBusinessName && (
-                      <p className="text-xs text-brand-600 font-medium mt-0.5">by {p.vendorBusinessName}</p>
-                    )}
+            <div key={p.id} className="card p-4">
+              <div className="flex gap-4">
+                <ProductImage src={p.imageUrl} alt={p.name} className="w-20 h-20 rounded-xl object-cover bg-gray-100 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-semibold text-gray-900">{p.name}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{p.category.replace(/_/g, ' ')} · {p.variants.length > 0 ? `${p.variants.length} variants` : formatNGN(p.price)} · stock: {p.variants.length > 0 ? p.variants.reduce((s, v) => s + v.stock, 0) : p.stock}</p>
+                      {p.vendorBusinessName && (
+                        <p className="text-xs text-brand-600 font-medium mt-0.5">by {p.vendorBusinessName}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button onClick={() => setPreviewProduct(p)}
+                        className="flex items-center gap-1 text-sm font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors">
+                        <Eye className="h-4 w-4" /> Preview
+                      </button>
+                      <button onClick={() => approveMutation.mutate(p.id)}
+                        className="flex items-center gap-1 text-sm font-medium text-green-600 hover:text-green-800 bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-lg transition-colors">
+                        <CheckCircle className="h-4 w-4" /> Approve
+                      </button>
+                      <button onClick={() => { setRejectModal(p); setRejectReason(''); }}
+                        className="flex items-center gap-1 text-sm font-medium text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors">
+                        <XCircle className="h-4 w-4" /> Reject
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button onClick={() => approveMutation.mutate(p.id)}
-                      className="flex items-center gap-1 text-sm font-medium text-green-600 hover:text-green-800 bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-lg transition-colors">
-                      <CheckCircle className="h-4 w-4" /> Approve
-                    </button>
-                    <button onClick={() => { setRejectModal(p); setRejectReason(''); }}
-                      className="flex items-center gap-1 text-sm font-medium text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors">
-                      <XCircle className="h-4 w-4" /> Reject
-                    </button>
-                  </div>
+                  {p.description && <p className="text-xs text-gray-500 mt-2 leading-relaxed">{p.description}</p>}
+                  {p.variants.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {p.variants.map((v) => (
+                        <span key={v.id} className={`badge ${v.active ? 'bg-gray-100 text-gray-600' : 'bg-gray-50 text-gray-400 line-through'}`}>
+                          {v.label} — {formatNGN(v.price)} · {v.stock} in stock
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {p.imageUrl && (
+                    <a href={p.imageUrl} target="_blank" rel="noopener noreferrer"
+                      className="inline-block text-xs text-brand-600 hover:underline mt-2">
+                      Test image link ↗
+                    </a>
+                  )}
                 </div>
-                {p.description && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{p.description}</p>}
-                {p.variants.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {p.variants.map((v) => (
-                      <span key={v.id} className="badge bg-gray-100 text-gray-600">{v.label} — {formatNGN(v.price)}</span>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Full product preview modal */}
+      {previewProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900">Product Preview</h2>
+              <button onClick={() => setPreviewProduct(null)} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-5 space-y-5">
+              {/* Image */}
+              <div className="w-full aspect-video rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
+                {previewProduct.imageUrl ? (
+                  <img src={previewProduct.imageUrl} alt={previewProduct.name} className="w-full h-full object-contain" />
+                ) : (
+                  <span className="text-gray-400 text-sm">No image</span>
+                )}
+              </div>
+
+              {/* Details */}
+              <div>
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <h3 className="text-xl font-bold text-gray-900">{previewProduct.name}</h3>
+                  <span className="badge bg-brand-50 text-brand-700 shrink-0">{previewProduct.category.replace(/_/g, ' ')}</span>
+                </div>
+                {previewProduct.vendorBusinessName && (
+                  <p className="text-sm text-brand-600 font-medium mb-3">by {previewProduct.vendorBusinessName}</p>
+                )}
+                {previewProduct.description && (
+                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{previewProduct.description}</p>
+                )}
+              </div>
+
+              {/* Pricing */}
+              {previewProduct.variants.length === 0 ? (
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  <span className="text-sm text-gray-600">Price</span>
+                  <span className="font-bold text-gray-900">{formatNGN(previewProduct.price)}</span>
+                  <span className="text-sm text-gray-500">Stock: {previewProduct.stock}</span>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-sm font-semibold text-gray-700 mb-2">Variants</p>
+                  <div className="space-y-2">
+                    {previewProduct.variants.map((v) => (
+                      <div key={v.id} className={`flex items-center justify-between p-3 rounded-xl border ${v.active ? 'border-gray-100 bg-gray-50' : 'border-dashed border-gray-200 opacity-50'}`}>
+                        <span className="text-sm font-medium text-gray-800">{v.label}</span>
+                        <div className="flex items-center gap-4 text-sm">
+                          <span className="font-bold text-gray-900">{formatNGN(v.price)}</span>
+                          <span className="text-gray-500">{v.stock} in stock</span>
+                          {!v.active && <span className="text-xs text-gray-400">inactive</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Image link check */}
+              {previewProduct.imageUrl && (
+                <div className="p-3 bg-amber-50 rounded-xl text-xs text-amber-700">
+                  <p className="font-medium mb-1">Image URL</p>
+                  <a href={previewProduct.imageUrl} target="_blank" rel="noopener noreferrer"
+                    className="break-all hover:underline">{previewProduct.imageUrl} ↗</a>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 p-5 border-t border-gray-100">
+              <button onClick={() => setPreviewProduct(null)} className="btn-secondary flex-1">Close</button>
+              <button
+                onClick={() => { approveMutation.mutate(previewProduct.id); setPreviewProduct(null); }}
+                className="btn-primary flex-1 bg-green-600 hover:bg-green-700 justify-center">
+                <CheckCircle className="h-4 w-4" /> Approve
+              </button>
+              <button
+                onClick={() => { setRejectModal(previewProduct); setPreviewProduct(null); setRejectReason(''); }}
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors">
+                <XCircle className="h-4 w-4" /> Reject
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

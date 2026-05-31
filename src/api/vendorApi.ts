@@ -86,6 +86,17 @@ export const adminVendorApi = {
     api.post<ApiResponse<Product>>(`/api/admin/products/${id}/reject`, { reason }),
 };
 
+export const publicVendorsApi = {
+  list: (params?: { page?: number; size?: number }) =>
+    api.get<ApiResponse<PageResponse<Vendor>>>('/api/vendors', { params }),
+
+  getById: (id: string) =>
+    api.get<ApiResponse<Vendor>>(`/api/vendors/${id}`),
+
+  getProducts: (id: string, params?: { page?: number; size?: number }) =>
+    api.get<ApiResponse<PageResponse<Product>>>(`/api/vendors/${id}/products`, { params }),
+};
+
 export const authVendorApi = {
   register: (data: { email: string; password: string; businessName: string; description?: string; phone?: string }) =>
     api.post<ApiResponse<{ token: string; role: string; firstName: string }>>('/api/auth/register-vendor', data),
