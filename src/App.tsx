@@ -15,6 +15,7 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Orders from './pages/Orders';
+import OrderDetail from './pages/OrderDetail';
 
 // Admin
 import Dashboard from './pages/admin/Dashboard';
@@ -86,6 +87,7 @@ export default function App() {
             <Route element={<RequireAuth />}>
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/orders" element={<Orders />} />
+              <Route path="/orders/:id" element={<OrderDetail />} />
             </Route>
           </Route>
 

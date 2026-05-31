@@ -119,6 +119,8 @@ export interface Order {
   deliveryAddress: string;
   deliveryCity: string;
   deliveryState: string;
+  phone: string;
+  alternatePhone: string;
   notes: string;
   createdAt: string;
   updatedAt: string;
