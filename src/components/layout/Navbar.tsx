@@ -64,10 +64,10 @@ export default function Navbar() {
                     Dashboard
                   </Link>
                 )}
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50">
+                <Link to="/profile" className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors">
                   <User className="h-4 w-4 text-gray-500" />
                   <span className="text-sm font-medium text-gray-700">{user?.firstName}</span>
-                </div>
+                </Link>
                 <button onClick={handleLogout} className="btn-ghost text-red-500">
                   <LogOut className="h-4 w-4" />
                 </button>
@@ -93,6 +93,9 @@ export default function Navbar() {
           <Link to="/products" onClick={() => setMenuOpen(false)} className="block py-2 text-sm font-medium text-gray-700">Shop</Link>
           {isAuthenticated && (
             <Link to="/orders" onClick={() => setMenuOpen(false)} className="block py-2 text-sm font-medium text-gray-700">My Orders</Link>
+          )}
+          {isAuthenticated && (
+            <Link to="/profile" onClick={() => setMenuOpen(false)} className="block py-2 text-sm font-medium text-gray-700">My Profile</Link>
           )}
           {isAdmin && (
             <Link to="/admin/dashboard" onClick={() => setMenuOpen(false)} className="block py-2 text-sm font-medium text-brand-700">Admin Dashboard</Link>
