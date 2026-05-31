@@ -5,17 +5,21 @@ import { paymentsApi } from '../api/payments';
 
 export default function PaymentSuccess() {
   const [params] = useSearchParams();
-  const reference = params.get('reference');
-  const [status, setStatus] = useState<'verifying' | 'success' | 'failed'>('verifying');
+  const status = params.get('status');
+  const transactionId = params.get('transaction_id');
+  const [state, setState] = useState<'verifying' | 'success' | 'failed'>('verifying');
 
   useEffect(() => {
-    if (!reference) { setStatus('failed'); return; }
-    paymentsApi.verify(reference)
-      .then(() => setStatus('success'))
-      .catch(() => setStatus('failed'));
-  }, [reference]);
+    if (status !== 'successful' || !transactionId) {
+      setState('failed');
+      return;
+    }
+    paymentsApi.verify(transactionId)
+      .then(() => setState('success'))
+      .catch(() => setState('failed'));
+  }, [status, transactionId]);
 
-  if (status === 'verifying') {
+  if (state === 'verifying') {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center gap-4">
         <Loader2 className="h-12 w-12 text-brand-600 animate-spin" />
@@ -24,7 +28,7 @@ export default function PaymentSuccess() {
     );
   }
 
-  if (status === 'failed') {
+  if (state === 'failed') {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center gap-6 px-4 text-center">
         <div className="p-5 rounded-full bg-red-50">
