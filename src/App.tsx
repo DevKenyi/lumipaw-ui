@@ -29,6 +29,7 @@ import RegisterVendor from './pages/RegisterVendor';
 import VendorDashboard from './pages/vendor/VendorDashboard';
 import VendorProducts from './pages/vendor/VendorProducts';
 import VendorSubmitProduct from './pages/vendor/VendorSubmitProduct';
+import VendorBulkUpload from './pages/vendor/VendorBulkUpload';
 
 const qc = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -90,6 +91,7 @@ export default function App() {
             <Route path="/vendor/dashboard" element={<VendorDashboard />} />
             <Route path="/vendor/products" element={<VendorProducts />} />
             <Route path="/vendor/submit" element={<VendorSubmitProduct />} />
+            <Route path="/vendor/bulk-upload" element={<VendorBulkUpload />} />
           </Route>
 
           {/* Admin routes */}
