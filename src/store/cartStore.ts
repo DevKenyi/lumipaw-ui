@@ -1,12 +1,16 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { CartItem, Product } from '../types';
+import type { CartItem, Product, ProductVariant } from '../types';
+
+function itemKey(productId: string, variantId: string | null | undefined) {
+  return `${productId}:${variantId ?? 'base'}`;
+}
 
 interface CartState {
   items: CartItem[];
-  addItem: (product: Product, quantity?: number) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addItem: (product: Product, variant: ProductVariant | null, quantity?: number) => void;
+  removeItem: (productId: string, variantId?: string | null) => void;
+  updateQuantity: (productId: string, variantId: string | null | undefined, quantity: number) => void;
   clearCart: () => void;
   totalItems: () => number;
   subtotal: () => number;
@@ -17,33 +21,42 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
 
-      addItem: (product, quantity = 1) => {
+      addItem: (product, variant, quantity = 1) => {
+        const key = itemKey(product.id, variant?.id);
+        const maxStock = variant ? variant.stock : product.stock;
         set((state) => {
-          const existing = state.items.find((i) => i.product.id === product.id);
+          const existing = state.items.find(
+            (i) => itemKey(i.product.id, i.variant?.id) === key
+          );
           if (existing) {
             return {
               items: state.items.map((i) =>
-                i.product.id === product.id
-                  ? { ...i, quantity: Math.min(i.quantity + quantity, product.stock) }
+                itemKey(i.product.id, i.variant?.id) === key
+                  ? { ...i, quantity: Math.min(i.quantity + quantity, maxStock) }
                   : i
               ),
             };
           }
-          return { items: [...state.items, { product, quantity }] };
+          return { items: [...state.items, { product, variant, quantity }] };
         });
       },
 
-      removeItem: (productId) =>
-        set((state) => ({ items: state.items.filter((i) => i.product.id !== productId) })),
+      removeItem: (productId, variantId) => {
+        const key = itemKey(productId, variantId);
+        set((state) => ({
+          items: state.items.filter((i) => itemKey(i.product.id, i.variant?.id) !== key),
+        }));
+      },
 
-      updateQuantity: (productId, quantity) => {
+      updateQuantity: (productId, variantId, quantity) => {
+        const key = itemKey(productId, variantId);
         if (quantity <= 0) {
-          get().removeItem(productId);
+          get().removeItem(productId, variantId);
           return;
         }
         set((state) => ({
           items: state.items.map((i) =>
-            i.product.id === productId ? { ...i, quantity } : i
+            itemKey(i.product.id, i.variant?.id) === key ? { ...i, quantity } : i
           ),
         }));
       },
@@ -53,7 +66,10 @@ export const useCartStore = create<CartState>()(
       totalItems: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
 
       subtotal: () =>
-        get().items.reduce((sum, i) => sum + i.product.price * i.quantity, 0),
+        get().items.reduce(
+          (sum, i) => sum + (i.variant ? i.variant.price : i.product.price) * i.quantity,
+          0
+        ),
     }),
     { name: 'lp_cart' }
   )

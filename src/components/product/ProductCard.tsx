@@ -1,4 +1,4 @@
-import { ShoppingCart, Star } from 'lucide-react';
+import { ShoppingCart, Star, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { Product } from '../../types';
@@ -7,13 +7,18 @@ import { formatNGN } from '../../utils/format';
 
 export default function ProductCard({ product }: { product: Product }) {
   const addItem = useCartStore((s) => s.addItem);
+  const hasVariants = product.variants && product.variants.length > 0;
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!product.inStock) return;
-    addItem(product);
+    if (!product.inStock || hasVariants) return;
+    addItem(product, null);
     toast.success(`${product.name} added to cart`);
   };
+
+  const minPrice = hasVariants
+    ? Math.min(...product.variants.map((v) => v.price))
+    : product.price;
 
   return (
     <Link to={`/products/${product.id}`} className="group card overflow-hidden flex flex-col hover:shadow-card-hover transition-shadow duration-200">
@@ -24,7 +29,7 @@ export default function ProductCard({ product }: { product: Product }) {
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
         />
-        {!product.inStock && (
+        {!product.inStock && !hasVariants && (
           <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
             <span className="badge bg-gray-200 text-gray-600">Out of stock</span>
           </div>
@@ -44,15 +49,28 @@ export default function ProductCard({ product }: { product: Product }) {
           <span className="text-xs text-gray-400 ml-1">(12)</span>
         </div>
 
+        {hasVariants && (
+          <p className="text-xs text-gray-500 mb-2">{product.variants.length} size options</p>
+        )}
+
         <div className="mt-auto flex items-center justify-between">
-          <span className="text-lg font-bold text-gray-900">{formatNGN(product.price)}</span>
-          <button
-            onClick={handleAdd}
-            disabled={!product.inStock}
-            className="p-2 rounded-xl bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            <ShoppingCart className="h-4 w-4" />
-          </button>
+          <div>
+            {hasVariants && <p className="text-xs text-gray-400">From</p>}
+            <span className="text-lg font-bold text-gray-900">{formatNGN(minPrice)}</span>
+          </div>
+          {hasVariants ? (
+            <span className="flex items-center gap-1 text-xs font-semibold text-brand-600 bg-brand-50 px-3 py-2 rounded-xl">
+              Choose <ChevronRight className="h-3 w-3" />
+            </span>
+          ) : (
+            <button
+              onClick={handleAdd}
+              disabled={!product.inStock}
+              className="p-2 rounded-xl bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <ShoppingCart className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
     </Link>

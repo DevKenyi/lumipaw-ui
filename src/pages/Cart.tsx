@@ -40,32 +40,47 @@ export default function Cart() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Items */}
         <div className="lg:col-span-2 space-y-4">
-          {items.map(({ product, quantity }) => (
-            <div key={product.id} className="card p-4 flex gap-4">
-              <img
-                src={product.imageUrl || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=200'}
-                alt={product.name}
-                className="w-20 h-20 rounded-xl object-cover bg-gray-50 shrink-0"
-              />
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 text-sm leading-snug mb-1 truncate">{product.name}</h3>
-                <p className="text-brand-600 font-bold">{formatNGN(product.price)}</p>
-                <div className="flex items-center gap-3 mt-3">
-                  <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-                    <button onClick={() => updateQuantity(product.id, quantity - 1)} className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 text-sm">−</button>
-                    <span className="px-3 py-1.5 text-sm font-semibold border-x border-gray-200">{quantity}</span>
-                    <button onClick={() => updateQuantity(product.id, quantity + 1)} className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 text-sm">+</button>
+          {items.map(({ product, variant, quantity }) => {
+            const price = variant ? variant.price : product.price;
+            return (
+              <div key={`${product.id}:${variant?.id ?? 'base'}`} className="card p-4 flex gap-4">
+                <img
+                  src={product.imageUrl || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=200'}
+                  alt={product.name}
+                  className="w-20 h-20 rounded-xl object-cover bg-gray-50 shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 text-sm leading-snug mb-0.5 truncate">{product.name}</h3>
+                  {variant && (
+                    <p className="text-xs text-brand-600 font-medium mb-1">{variant.label}</p>
+                  )}
+                  <p className="text-brand-600 font-bold">{formatNGN(price)}</p>
+                  <div className="flex items-center gap-3 mt-3">
+                    <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+                      <button
+                        onClick={() => updateQuantity(product.id, variant?.id, quantity - 1)}
+                        className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 text-sm"
+                      >−</button>
+                      <span className="px-3 py-1.5 text-sm font-semibold border-x border-gray-200">{quantity}</span>
+                      <button
+                        onClick={() => updateQuantity(product.id, variant?.id, quantity + 1)}
+                        className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 text-sm"
+                      >+</button>
+                    </div>
+                    <button
+                      onClick={() => removeItem(product.id, variant?.id)}
+                      className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
-                  <button onClick={() => removeItem(product.id)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="font-bold text-gray-900">{formatNGN(price * quantity)}</p>
                 </div>
               </div>
-              <div className="text-right shrink-0">
-                <p className="font-bold text-gray-900">{formatNGN(product.price * quantity)}</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Summary */}

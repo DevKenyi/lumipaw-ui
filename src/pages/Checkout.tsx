@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useCartStore } from '../store/cartStore';
 import { ordersApi } from '../api/orders';
@@ -11,7 +10,6 @@ const SERVICE_FEE = 200;
 
 export default function Checkout() {
   const { items, subtotal, clearCart } = useCartStore();
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     deliveryAddress: '', deliveryCity: '', deliveryState: '', notes: '',
@@ -29,7 +27,11 @@ export default function Checkout() {
     setLoading(true);
     try {
       const orderRes = await ordersApi.create({
-        items: items.map((i) => ({ productId: i.product.id, quantity: i.quantity })),
+        items: items.map((i) => ({
+          productId: i.product.id,
+          variantId: i.variant?.id ?? null,
+          quantity: i.quantity,
+        })),
         ...form,
       });
       const orderId = orderRes.data.data.id;
@@ -103,16 +105,20 @@ export default function Checkout() {
         <div className="card p-6 h-fit sticky top-24">
           <h2 className="text-lg font-bold text-gray-900 mb-4">Your order</h2>
           <div className="space-y-3 mb-4">
-            {items.map(({ product, quantity }) => (
-              <div key={product.id} className="flex gap-3">
-                <img src={product.imageUrl} alt={product.name} className="w-12 h-12 rounded-lg object-cover bg-gray-50 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-                  <p className="text-xs text-gray-500">×{quantity}</p>
+            {items.map(({ product, variant, quantity }) => {
+              const price = variant ? variant.price : product.price;
+              return (
+                <div key={`${product.id}:${variant?.id ?? 'base'}`} className="flex gap-3">
+                  <img src={product.imageUrl} alt={product.name} className="w-12 h-12 rounded-lg object-cover bg-gray-50 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
+                    {variant && <p className="text-xs text-brand-600">{variant.label}</p>}
+                    <p className="text-xs text-gray-500">×{quantity}</p>
+                  </div>
+                  <p className="text-sm font-semibold text-gray-900 shrink-0">{formatNGN(price * quantity)}</p>
                 </div>
-                <p className="text-sm font-semibold text-gray-900 shrink-0">{formatNGN(product.price * quantity)}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="border-t border-gray-100 pt-4 space-y-2 text-sm">
             <div className="flex justify-between text-gray-500"><span>Subtotal</span><span>{formatNGN(sub)}</span></div>

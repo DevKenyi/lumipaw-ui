@@ -25,6 +25,16 @@ export interface LoginResponse {
 }
 
 // Product
+export interface ProductVariant {
+  id: string;
+  label: string;
+  price: number;
+  stock: number;
+  active: boolean;
+  inStock: boolean;
+  sortOrder: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -36,6 +46,7 @@ export interface Product {
   active: boolean;
   inStock: boolean;
   createdAt: string;
+  variants: ProductVariant[];
 }
 
 // Customer
@@ -55,6 +66,7 @@ export interface Customer {
 // Cart
 export interface CartItem {
   product: Product;
+  variant: ProductVariant | null;
   quantity: number;
 }
 
@@ -67,6 +79,8 @@ export interface OrderItem {
   productId: string;
   productName: string;
   productImageUrl: string;
+  variantId: string | null;
+  variantLabel: string | null;
   quantity: number;
   unitPrice: number;
   subtotal: number;
@@ -109,6 +123,27 @@ export interface Invoice {
   amount: number;
   status: 'DRAFT' | 'ISSUED' | 'PAID' | 'VOID';
   generatedAt: string;
+}
+
+// Admin product form
+export interface ProductVariantInput {
+  id?: string;
+  label: string;
+  price: number;
+  stock: number;
+  active: boolean;
+  sortOrder: number;
+}
+
+export interface ProductInput {
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  category: string;
+  imageUrl: string;
+  active: boolean;
+  variants: ProductVariantInput[];
 }
 
 // Dashboard

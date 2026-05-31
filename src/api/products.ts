@@ -1,5 +1,5 @@
 import api from './axios';
-import type { ApiResponse, PageResponse, Product } from '../types';
+import type { ApiResponse, PageResponse, Product, ProductInput } from '../types';
 
 export const productsApi = {
   list: (params?: { category?: string; search?: string; page?: number; size?: number }) =>
@@ -15,10 +15,10 @@ export const productsApi = {
   adminList: (params?: { page?: number; size?: number }) =>
     api.get<ApiResponse<PageResponse<Product>>>('/api/admin/products', { params }),
 
-  create: (data: Partial<Product>) =>
+  create: (data: ProductInput) =>
     api.post<ApiResponse<Product>>('/api/admin/products', data),
 
-  update: (id: string, data: Partial<Product>) =>
+  update: (id: string, data: ProductInput) =>
     api.put<ApiResponse<Product>>(`/api/admin/products/${id}`, data),
 
   toggleActive: (id: string) =>
