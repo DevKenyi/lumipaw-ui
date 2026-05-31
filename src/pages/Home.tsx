@@ -7,7 +7,7 @@ import Spinner from '../components/ui/Spinner';
 
 const categories = [
   { label: 'Dog Food', value: 'DOG_FOOD', emoji: '🦴' },
-  { label: 'Cat Food', value: 'CAT_FOOD', emoji: '🐟' },
+  { label: 'Cat Food', value: 'CAT_FOOD', emoji: '🐱' },
   { label: 'Dog Treats', value: 'DOG_TREATS', emoji: '🎁' },
   { label: 'Accessories', value: 'ACCESSORIES', emoji: '🎀' },
   { label: 'Cat Accessories', value: 'CAT_ACCESSORIES', emoji: '🧶' },
