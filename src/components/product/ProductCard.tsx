@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import type { Product } from '../../types';
 import { useCartStore } from '../../store/cartStore';
 import { formatNGN } from '../../utils/format';
+import ProductImage from '../ui/ProductImage';
 
 export default function ProductCard({ product }: { product: Product }) {
   const addItem = useCartStore((s) => s.addItem);
@@ -23,11 +24,10 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <Link to={`/products/${product.id}`} className="group card overflow-hidden flex flex-col hover:shadow-card-hover transition-shadow duration-200">
       <div className="relative aspect-square overflow-hidden bg-gray-50">
-        <img
-          src={product.imageUrl || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400'}
+        <ProductImage
+          src={product.imageUrl}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          loading="lazy"
         />
         {!product.inStock && !hasVariants && (
           <div className="absolute inset-0 bg-white/70 flex items-center justify-center">

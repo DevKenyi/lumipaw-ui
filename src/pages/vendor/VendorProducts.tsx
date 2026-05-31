@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Pencil, AlertCircle } from 'lucide-react';
+import { Pencil, AlertCircle, X, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { vendorApi } from '../../api/vendorApi';
 import VendorLayout from '../../components/layout/VendorLayout';
 import { formatNGN } from '../../utils/format';
 import Spinner from '../../components/ui/Spinner';
+import ProductImage from '../../components/ui/ProductImage';
 import type { Product, ProductVariantInput } from '../../types';
-import { X, Plus } from 'lucide-react';
 
 const EMPTY_FORM = { name: '', description: '', price: 0, stock: 0, category: 'DOG_FOOD', imageUrl: '', active: true };
 const newVariant = (): ProductVariantInput => ({ label: '', price: 0, stock: 0, active: true, sortOrder: 0 });
@@ -66,7 +66,7 @@ export default function VendorProducts() {
         <div className="space-y-4">
           {products.map((p) => (
             <div key={p.id} className="card p-4 flex gap-4">
-              <img src={p.imageUrl} alt={p.name} className="w-16 h-16 rounded-xl object-cover bg-gray-100 shrink-0" />
+              <ProductImage src={p.imageUrl} alt={p.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div>

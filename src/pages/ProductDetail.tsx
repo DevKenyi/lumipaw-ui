@@ -7,6 +7,7 @@ import { productsApi } from '../api/products';
 import { useCartStore } from '../store/cartStore';
 import { formatNGN } from '../utils/format';
 import Spinner from '../components/ui/Spinner';
+import ProductImage from '../components/ui/ProductImage';
 import type { ProductVariant } from '../types';
 
 export default function ProductDetail() {
@@ -49,8 +50,8 @@ export default function ProductDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Image */}
         <div className="aspect-square rounded-3xl overflow-hidden bg-gray-50">
-          <img
-            src={product.imageUrl || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800'}
+          <ProductImage
+            src={product.imageUrl}
             alt={product.name}
             className="w-full h-full object-cover"
           />

@@ -5,6 +5,7 @@ import { vendorApi } from '../../api/vendorApi';
 import VendorLayout from '../../components/layout/VendorLayout';
 import Spinner from '../../components/ui/Spinner';
 import { formatNGN } from '../../utils/format';
+import ProductImage from '../../components/ui/ProductImage';
 
 export default function VendorDashboard() {
   const { data, isLoading } = useQuery({
@@ -26,7 +27,7 @@ export default function VendorDashboard() {
 
       {isLoading ? <div className="flex justify-center py-20"><Spinner size="lg" /></div> : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-5 mb-10">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             {[
               { label: 'Total Products', value: products.length, icon: Package, color: 'bg-blue-50 text-blue-600' },
               { label: 'Approved', value: approved, icon: CheckCircle, color: 'bg-green-50 text-green-600' },
@@ -60,14 +61,15 @@ export default function VendorDashboard() {
             </div>
             <div className="divide-y divide-gray-50">
               {products.slice(0, 5).map((p) => (
-                <div key={p.id} className="flex items-center gap-4 p-4">
-                  <img src={p.imageUrl} alt={p.name} className="w-10 h-10 rounded-lg object-cover bg-gray-100 shrink-0" />
+                <div key={p.id} className="flex items-center gap-3 p-4">
+                  <ProductImage src={p.imageUrl} alt={p.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-900 text-sm truncate">{p.name}</p>
-                    <p className="text-xs text-gray-400">{p.category.replace(/_/g, ' ')}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <StatusBadge status={p.approvalStatus} />
+                    </div>
                   </div>
-                  <StatusBadge status={p.approvalStatus} />
-                  <p className="text-sm font-semibold text-gray-900">{formatNGN(p.price)}</p>
+                  <p className="text-sm font-semibold text-gray-900 shrink-0">{formatNGN(p.price)}</p>
                 </div>
               ))}
               {products.length === 0 && (
