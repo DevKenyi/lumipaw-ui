@@ -1,11 +1,14 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useCartStore } from '../store/cartStore';
 import { ordersApi } from '../api/orders';
 import { paymentsApi } from '../api/payments';
+import { deliveryZonesApi } from '../api/deliveryZonesApi';
 import { formatNGN } from '../utils/format';
+import { OTHER_STATES_FEE } from '../utils/deliveryZones';
 import ProductImage from '../components/ui/ProductImage';
-import { DELIVERY_ZONES, OTHER_STATES_FEE, isZonedState, getDeliveryFee } from '../utils/deliveryZones';
+import Spinner from '../components/ui/Spinner';
 
 const NIGERIAN_STATES = [
   'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa',
@@ -23,6 +26,14 @@ export default function Checkout() {
     deliveryAddress: '', deliveryCity: '', deliveryState: '', notes: '',
   });
 
+  const { data: zonesData, isLoading: zonesLoading } = useQuery({
+    queryKey: ['delivery-zones'],
+    queryFn: () => deliveryZonesApi.getAll(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const zones = zonesData?.data.data ?? {};
+
   const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [field]: e.target.value }));
 
@@ -30,17 +41,21 @@ export default function Checkout() {
     setForm((f) => ({ ...f, deliveryState: e.target.value, deliveryCity: '' }));
   };
 
-  const sub = subtotal();
-  const serviceFee = Math.round(sub * 0.05);
+  const isZoned = form.deliveryState in zones;
 
   const deliveryFee = (() => {
     if (!form.deliveryState) return 0;
-    if (isZonedState(form.deliveryState)) {
-      return form.deliveryCity ? getDeliveryFee(form.deliveryState, form.deliveryCity) : 0;
+    const stateZones = zones[form.deliveryState];
+    if (!stateZones) return OTHER_STATES_FEE;
+    if (!form.deliveryCity) return 0;
+    for (const zone of stateZones) {
+      if (zone.locations.includes(form.deliveryCity)) return zone.fee;
     }
     return OTHER_STATES_FEE;
   })();
 
+  const sub = subtotal();
+  const serviceFee = Math.round(sub * 0.05);
   const total = sub + serviceFee + deliveryFee;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,13 +111,17 @@ export default function Checkout() {
                 </div>
 
                 <div>
-                  {isZonedState(form.deliveryState) ? (
+                  {zonesLoading && form.deliveryState ? (
+                    <div className="flex items-center justify-center h-full">
+                      <Spinner size="sm" />
+                    </div>
+                  ) : isZoned ? (
                     <>
                       <label className="block text-sm font-medium text-gray-700 mb-1.5">Area / Location</label>
                       <select value={form.deliveryCity} onChange={set('deliveryCity')} className="input" required>
                         <option value="">Select area</option>
-                        {DELIVERY_ZONES[form.deliveryState].map((zone) => (
-                          <optgroup key={zone.name} label={`${zone.name} — ${formatNGN(zone.fee)}`}>
+                        {zones[form.deliveryState].map((zone) => (
+                          <optgroup key={zone.id} label={`${zone.zoneName} — ${formatNGN(zone.fee)}`}>
                             {zone.locations.map((loc) => (
                               <option key={loc} value={loc}>{loc}</option>
                             ))}

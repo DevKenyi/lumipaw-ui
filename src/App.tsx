@@ -32,6 +32,7 @@ import VendorSubmitProduct from './pages/vendor/VendorSubmitProduct';
 import VendorBulkUpload from './pages/vendor/VendorBulkUpload';
 import VendorEarnings from './pages/vendor/VendorEarnings';
 import AdminPayouts from './pages/admin/AdminPayouts';
+import AdminDeliveryZones from './pages/admin/AdminDeliveryZones';
 
 const qc = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -106,6 +107,7 @@ export default function App() {
             <Route path="/admin/customers" element={<AdminCustomers />} />
             <Route path="/admin/invoices" element={<AdminInvoices />} />
             <Route path="/admin/payouts" element={<AdminPayouts />} />
+            <Route path="/admin/delivery-zones" element={<AdminDeliveryZones />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
