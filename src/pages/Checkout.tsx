@@ -152,11 +152,11 @@ export default function Checkout() {
             <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-100">
               <span className="text-2xl">🔒</span>
               <div>
-                <p className="font-semibold text-green-800 text-sm">Secured by Paystack</p>
+                <p className="font-semibold text-green-800 text-sm">Secured by Flutterwave</p>
                 <p className="text-xs text-green-600">Your card details are encrypted and never stored</p>
               </div>
             </div>
-            <p className="text-sm text-gray-500 mt-3">You'll be redirected to Paystack to complete payment securely.</p>
+            <p className="text-sm text-gray-500 mt-3">You'll be redirected to Flutterwave to complete payment securely.</p>
           </div>
 
           <button type="submit" disabled={loading || items.length === 0} className="btn-primary w-full text-base py-4">
