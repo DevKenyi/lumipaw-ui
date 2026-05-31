@@ -7,7 +7,6 @@ import EmptyState from '../components/ui/EmptyState';
 import ProductImage from '../components/ui/ProductImage';
 
 const DELIVERY_FEE = 1500;
-const SERVICE_FEE = 200;
 
 export default function Cart() {
   const { items, removeItem, updateQuantity, subtotal } = useCartStore();
@@ -15,7 +14,8 @@ export default function Cart() {
   const navigate = useNavigate();
 
   const sub = subtotal();
-  const total = sub + DELIVERY_FEE + SERVICE_FEE;
+  const serviceFee = Math.round(sub * 0.05);
+  const total = sub + DELIVERY_FEE + serviceFee;
 
   const handleCheckout = () => {
     if (!isAuthenticated) { navigate('/login'); return; }
@@ -96,7 +96,7 @@ export default function Cart() {
                 <span>Delivery fee</span><span className="font-medium text-gray-900">{formatNGN(DELIVERY_FEE)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span>Service fee</span><span className="font-medium text-gray-900">{formatNGN(SERVICE_FEE)}</span>
+                <span>Service fee (5%)</span><span className="font-medium text-gray-900">{formatNGN(serviceFee)}</span>
               </div>
               <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-gray-900">
                 <span>Total</span><span className="text-lg">{formatNGN(total)}</span>

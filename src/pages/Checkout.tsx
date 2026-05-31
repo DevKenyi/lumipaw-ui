@@ -7,7 +7,6 @@ import { formatNGN } from '../utils/format';
 import ProductImage from '../components/ui/ProductImage';
 
 const DELIVERY_FEE = 1500;
-const SERVICE_FEE = 200;
 
 export default function Checkout() {
   const { items, subtotal, clearCart } = useCartStore();
@@ -20,7 +19,8 @@ export default function Checkout() {
     setForm((f) => ({ ...f, [field]: e.target.value }));
 
   const sub = subtotal();
-  const total = sub + DELIVERY_FEE + SERVICE_FEE;
+  const serviceFee = Math.round(sub * 0.05);
+  const total = sub + DELIVERY_FEE + serviceFee;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,7 +124,7 @@ export default function Checkout() {
           <div className="border-t border-gray-100 pt-4 space-y-2 text-sm">
             <div className="flex justify-between text-gray-500"><span>Subtotal</span><span>{formatNGN(sub)}</span></div>
             <div className="flex justify-between text-gray-500"><span>Delivery</span><span>{formatNGN(DELIVERY_FEE)}</span></div>
-            <div className="flex justify-between text-gray-500"><span>Service fee</span><span>{formatNGN(SERVICE_FEE)}</span></div>
+            <div className="flex justify-between text-gray-500"><span>Service fee (5%)</span><span>{formatNGN(serviceFee)}</span></div>
             <div className="flex justify-between font-bold text-gray-900 text-base pt-2 border-t border-gray-100">
               <span>Total</span><span>{formatNGN(total)}</span>
             </div>
