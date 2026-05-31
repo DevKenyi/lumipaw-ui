@@ -23,7 +23,8 @@ export default function Checkout() {
   const { items, subtotal } = useCartStore();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    deliveryAddress: '', deliveryCity: '', deliveryState: '', notes: '',
+    deliveryAddress: '', deliveryCity: '', deliveryState: '',
+    phone: '', alternatePhone: '', notes: '',
   });
 
   const { data: zonesData, isLoading: zonesLoading } = useQuery({
@@ -135,6 +136,19 @@ export default function Checkout() {
                         placeholder="e.g. Port Harcourt" required />
                     </>
                   )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone number</label>
+                  <input value={form.phone} onChange={set('phone')} className="input"
+                    placeholder="08012345678" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Alternate phone <span className="text-gray-400 font-normal">(optional)</span></label>
+                  <input value={form.alternatePhone} onChange={set('alternatePhone')} className="input"
+                    placeholder="08087654321" />
                 </div>
               </div>
 
