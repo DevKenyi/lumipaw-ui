@@ -30,7 +30,12 @@ export default function VendorProducts() {
         ? vendorApi.resubmitProduct(editing!.id, payload)
         : vendorApi.editProduct(editing!.id, payload);
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['vendor-products'] }); toast.success('Product updated and submitted for review'); setEditing(null); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['vendor-products'] });
+      qc.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Product updated and submitted for review');
+      setEditing(null);
+    },
     onError: () => toast.error('Failed to save product'),
   });
 
