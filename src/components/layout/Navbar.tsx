@@ -5,7 +5,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
 
 export default function Navbar() {
-  const { isAuthenticated, isAdmin, user, logout } = useAuthStore();
+  const { isAuthenticated, isAdmin, isVendor, user, logout } = useAuthStore();
   const totalItems = useCartStore((s) => s.totalItems());
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -58,6 +58,12 @@ export default function Navbar() {
                     Admin
                   </Link>
                 )}
+                {isVendor && (
+                  <Link to="/vendor/dashboard" className="btn-ghost text-brand-700">
+                    <LayoutDashboard className="h-4 w-4" />
+                    Dashboard
+                  </Link>
+                )}
                 <div className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50">
                   <User className="h-4 w-4 text-gray-500" />
                   <span className="text-sm font-medium text-gray-700">{user?.firstName}</span>
@@ -90,6 +96,9 @@ export default function Navbar() {
           )}
           {isAdmin && (
             <Link to="/admin/dashboard" onClick={() => setMenuOpen(false)} className="block py-2 text-sm font-medium text-brand-700">Admin Dashboard</Link>
+          )}
+          {isVendor && (
+            <Link to="/vendor/dashboard" onClick={() => setMenuOpen(false)} className="block py-2 text-sm font-medium text-brand-700">Vendor Dashboard</Link>
           )}
           {isAuthenticated ? (
             <button onClick={handleLogout} className="block w-full text-left py-2 text-sm font-medium text-red-500">Sign out</button>
