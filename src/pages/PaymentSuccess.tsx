@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { paymentsApi } from '../api/payments';
+import { useCartStore } from '../store/cartStore';
 
 export default function PaymentSuccess() {
   const [params] = useSearchParams();
   const status = params.get('status');
   const transactionId = params.get('transaction_id');
   const [state, setState] = useState<'verifying' | 'success' | 'failed'>('verifying');
+  const clearCart = useCartStore((s) => s.clearCart);
 
   useEffect(() => {
     if (status !== 'successful' || !transactionId) {
@@ -15,7 +17,7 @@ export default function PaymentSuccess() {
       return;
     }
     paymentsApi.verify(transactionId)
-      .then(() => setState('success'))
+      .then(() => { clearCart(); setState('success'); })
       .catch(() => setState('failed'));
   }, [status, transactionId]);
 

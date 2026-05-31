@@ -20,7 +20,7 @@ const NIGERIAN_STATES = [
 ];
 
 export default function Checkout() {
-  const { items, subtotal, clearCart } = useCartStore();
+  const { items, subtotal } = useCartStore();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     deliveryAddress: '', deliveryCity: '', deliveryState: '', notes: '',
@@ -74,7 +74,6 @@ export default function Checkout() {
       const orderId = orderRes.data.data.id;
       const payRes = await paymentsApi.initialize(orderId);
       const { authorizationUrl } = payRes.data.data;
-      clearCart();
       window.location.href = authorizationUrl;
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Checkout failed';
