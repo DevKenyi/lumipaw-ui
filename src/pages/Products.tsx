@@ -10,7 +10,7 @@ import EmptyState from '../components/ui/EmptyState';
 const CATEGORIES = [
   { label: 'All', value: '' },
   { label: '🦴 Dog Food', value: 'DOG_FOOD' },
-  { label: '🐟 Cat Food', value: 'CAT_FOOD' },
+  { label: '🐱 Cat Food', value: 'CAT_FOOD' },
   { label: '🎁 Dog Treats', value: 'DOG_TREATS' },
   { label: '🎀 Accessories', value: 'ACCESSORIES' },
   { label: '🧶 Cat Accessories', value: 'CAT_ACCESSORIES' },
