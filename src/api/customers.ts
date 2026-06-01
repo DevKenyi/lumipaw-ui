@@ -17,4 +17,7 @@ export const customersApi = {
 
   dashboard: () =>
     api.get<ApiResponse<DashboardStats>>('/api/admin/dashboard'),
+
+  promoteToVendor: (customerId: string, data: { businessName: string; description?: string; phone?: string }) =>
+    api.post(`/api/admin/customers/${customerId}/promote-to-vendor`, data),
 };

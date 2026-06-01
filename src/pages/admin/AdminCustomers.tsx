@@ -1,14 +1,103 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Search } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Search, X, Store } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { customersApi } from '../../api/customers';
 import AdminLayout from '../../components/layout/AdminLayout';
 import { formatDate } from '../../utils/format';
 import Spinner from '../../components/ui/Spinner';
+import type { Customer } from '../../types';
+
+interface PromoteModalProps {
+  customer: Customer;
+  onClose: () => void;
+}
+
+function PromoteModal({ customer, onClose }: PromoteModalProps) {
+  const qc = useQueryClient();
+  const [form, setForm] = useState({ businessName: '', description: '', phone: customer.phone ?? '' });
+
+  const mutation = useMutation({
+    mutationFn: () => customersApi.promoteToVendor(customer.id, {
+      businessName: form.businessName,
+      description: form.description || undefined,
+      phone: form.phone || undefined,
+    }),
+    onSuccess: () => {
+      toast.success(`${customer.fullName} is now a vendor`);
+      qc.invalidateQueries({ queryKey: ['admin-customers'] });
+      onClose();
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message ?? 'Failed to promote customer');
+    },
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+        <div className="flex items-start justify-between p-6 border-b border-gray-100">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Promote to Vendor</h2>
+            <p className="text-sm text-gray-500 mt-0.5">{customer.fullName} · {customer.email}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 mt-0.5">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Business name <span className="text-red-400">*</span></label>
+            <input
+              value={form.businessName}
+              onChange={(e) => setForm((f) => ({ ...f, businessName: e.target.value }))}
+              className="input"
+              placeholder="e.g. Pawsome Pet Store"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Business description <span className="text-gray-400 font-normal">(optional)</span></label>
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              className="input resize-none"
+              rows={3}
+              placeholder="Tell customers about this vendor…"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone <span className="text-gray-400 font-normal">(optional)</span></label>
+            <input
+              value={form.phone}
+              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+              className="input"
+              placeholder="08012345678"
+            />
+          </div>
+          <p className="text-xs text-gray-400">The vendor account will be activated immediately and the user can log in and start listing products.</p>
+        </div>
+
+        <div className="flex gap-3 p-6 pt-0">
+          <button onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+          <button
+            disabled={!form.businessName.trim() || mutation.isPending}
+            onClick={() => mutation.mutate()}
+            className="btn-primary flex-1 disabled:opacity-50"
+          >
+            {mutation.isPending ? 'Promoting…' : 'Promote to Vendor'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminCustomers() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
+  const [promoting, setPromoting] = useState<Customer | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-customers', search, page],
@@ -36,10 +125,10 @@ export default function AdminCustomers() {
       {isLoading ? <div className="flex justify-center py-20"><Spinner size="lg" /></div> : (
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[560px]">
+          <table className="w-full text-sm min-w-[640px]">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                {['Name', 'Email', 'Phone', 'City', 'State', 'Joined'].map((h) => (
+                {['Name', 'Email', 'Phone', 'City', 'State', 'Joined', ''].map((h) => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
@@ -60,6 +149,15 @@ export default function AdminCustomers() {
                   <td className="px-4 py-3 text-gray-500">{c.city || '—'}</td>
                   <td className="px-4 py-3 text-gray-500">{c.state || '—'}</td>
                   <td className="px-4 py-3 text-gray-400">{formatDate(c.createdAt)}</td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => setPromoting(c)}
+                      className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-brand-200 text-brand-700 hover:bg-brand-50 transition-colors"
+                    >
+                      <Store size={13} />
+                      Make Vendor
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -78,6 +176,8 @@ export default function AdminCustomers() {
           ))}
         </div>
       )}
+
+      {promoting && <PromoteModal customer={promoting} onClose={() => setPromoting(null)} />}
     </AdminLayout>
   );
 }
