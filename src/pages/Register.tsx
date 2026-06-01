@@ -5,7 +5,7 @@ import { authApi } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
 
 export default function Register() {
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', phone: '' });
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '', phone: '' });
   const [loading, setLoading] = useState(false);
   const { login } = useAuthStore();
   const navigate = useNavigate();
@@ -15,9 +15,19 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (form.password !== form.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
     setLoading(true);
     try {
-      const res = await authApi.register(form);
+      const res = await authApi.register({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password,
+        phone: form.phone || undefined,
+      });
       login(res.data.data);
       toast.success('Account created! Welcome to LumiPaws 🐾');
       navigate('/products');
@@ -57,12 +67,26 @@ export default function Register() {
             <input type="email" value={form.email} onChange={set('email')} className="input" placeholder="you@example.com" required />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone (optional)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone <span className="text-gray-400 font-normal">(optional)</span></label>
             <input type="tel" value={form.phone} onChange={set('phone')} className="input" placeholder="+234 800 000 0000" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
             <input type="password" value={form.password} onChange={set('password')} className="input" placeholder="Min. 8 characters" required minLength={8} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm password</label>
+            <input
+              type="password"
+              value={form.confirmPassword}
+              onChange={set('confirmPassword')}
+              className={`input ${form.confirmPassword && form.password !== form.confirmPassword ? 'border-red-400 focus:border-red-400' : ''}`}
+              placeholder="Re-enter your password"
+              required
+            />
+            {form.confirmPassword && form.password !== form.confirmPassword && (
+              <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+            )}
           </div>
           <button type="submit" disabled={loading} className="btn-primary w-full">
             {loading ? 'Creating account…' : 'Create account'}

@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { authVendorApi } from '../api/vendorApi';
 
 export default function RegisterVendor() {
-  const [form, setForm] = useState({ email: '', password: '', businessName: '', description: '', phone: '' });
+  const [form, setForm] = useState({ email: '', password: '', confirmPassword: '', businessName: '', description: '', phone: '' });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -13,9 +13,19 @@ export default function RegisterVendor() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (form.password !== form.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
     setLoading(true);
     try {
-      await authVendorApi.register(form);
+      await authVendorApi.register({
+        email: form.email,
+        password: form.password,
+        businessName: form.businessName,
+        description: form.description,
+        phone: form.phone,
+      });
       setSubmitted(true);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Registration failed';
@@ -73,6 +83,20 @@ export default function RegisterVendor() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
             <input type="password" value={form.password} onChange={set('password')} className="input" placeholder="Min. 8 characters" required minLength={8} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm password</label>
+            <input
+              type="password"
+              value={form.confirmPassword}
+              onChange={set('confirmPassword')}
+              className={`input ${form.confirmPassword && form.password !== form.confirmPassword ? 'border-red-400 focus:border-red-400' : ''}`}
+              placeholder="Re-enter your password"
+              required
+            />
+            {form.confirmPassword && form.password !== form.confirmPassword && (
+              <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+            )}
           </div>
           <button type="submit" disabled={loading} className="btn-primary w-full">
             {loading ? 'Submitting…' : 'Submit application'}
