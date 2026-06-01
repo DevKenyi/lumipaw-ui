@@ -17,4 +17,7 @@ export const ordersApi = {
 
   updateStatus: (id: string, status: string) =>
     api.patch<ApiResponse<Order>>(`/api/admin/orders/${id}/status`, { status }),
+
+  confirmPodPayment: (id: string) =>
+    api.post<ApiResponse<Order>>(`/api/admin/orders/${id}/confirm-pod-payment`),
 };

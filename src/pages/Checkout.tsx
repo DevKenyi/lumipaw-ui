@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCartStore } from '../store/cartStore';
 import { ordersApi } from '../api/orders';
@@ -19,9 +21,14 @@ const NIGERIAN_STATES = [
   'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara',
 ];
 
+type PaymentMethod = 'ONLINE' | 'PAY_ON_DELIVERY';
+
 export default function Checkout() {
-  const { items, subtotal } = useCartStore();
+  const navigate = useNavigate();
+  const { items, subtotal, clearCart } = useCartStore();
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('ONLINE');
+  const [podConfirmed, setPodConfirmed] = useState(false);
   const [form, setForm] = useState({
     deliveryAddress: '', deliveryCity: '', deliveryState: '',
     phone: '', alternatePhone: '', notes: '',
@@ -59,9 +66,12 @@ export default function Checkout() {
   const serviceFee = Math.round(sub * 0.05);
   const total = sub + serviceFee + deliveryFee;
 
+  const isPod = paymentMethod === 'PAY_ON_DELIVERY';
+  const canSubmit = deliveryFee > 0 && (!isPod || podConfirmed);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (items.length === 0) return;
+    if (items.length === 0 || !canSubmit) return;
     setLoading(true);
     try {
       const orderRes = await ordersApi.create({
@@ -71,11 +81,19 @@ export default function Checkout() {
           quantity: i.quantity,
         })),
         ...form,
+        paymentMethod,
       });
       const orderId = orderRes.data.data.id;
-      const payRes = await paymentsApi.initialize(orderId);
-      const { authorizationUrl } = payRes.data.data;
-      window.location.href = authorizationUrl;
+
+      if (isPod) {
+        clearCart();
+        toast.success('Order placed! Pay the rider on delivery.');
+        navigate(`/orders/${orderId}`);
+      } else {
+        const payRes = await paymentsApi.initialize(orderId);
+        const { authorizationUrl } = payRes.data.data;
+        window.location.href = authorizationUrl;
+      }
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Checkout failed';
       toast.error(msg);
@@ -160,20 +178,91 @@ export default function Checkout() {
             </div>
           </div>
 
+          {/* Payment method */}
           <div className="card p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Payment</h2>
-            <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-100">
-              <span className="text-2xl">🔒</span>
-              <div>
-                <p className="font-semibold text-green-800 text-sm">Secured by Flutterwave</p>
-                <p className="text-xs text-green-600">Your card details are encrypted and never stored</p>
-              </div>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Payment method</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => { setPaymentMethod('ONLINE'); setPodConfirmed(false); }}
+                className={`flex items-start gap-3 p-4 rounded-xl border-2 text-left transition-colors ${
+                  paymentMethod === 'ONLINE'
+                    ? 'border-brand-600 bg-brand-50'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <span className="text-2xl mt-0.5">🔒</span>
+                <div>
+                  <p className={`font-semibold text-sm ${paymentMethod === 'ONLINE' ? 'text-brand-700' : 'text-gray-800'}`}>
+                    Pay Online
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">Card, bank transfer, USSD via Flutterwave</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('PAY_ON_DELIVERY')}
+                className={`flex items-start gap-3 p-4 rounded-xl border-2 text-left transition-colors ${
+                  paymentMethod === 'PAY_ON_DELIVERY'
+                    ? 'border-amber-500 bg-amber-50'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <span className="text-2xl mt-0.5">🏠</span>
+                <div>
+                  <p className={`font-semibold text-sm ${paymentMethod === 'PAY_ON_DELIVERY' ? 'text-amber-700' : 'text-gray-800'}`}>
+                    Pay on Delivery
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">Cash or bank transfer to rider</p>
+                </div>
+              </button>
             </div>
-            <p className="text-sm text-gray-500 mt-3">You'll be redirected to Flutterwave to complete payment securely.</p>
+
+            {paymentMethod === 'ONLINE' && (
+              <p className="text-sm text-gray-500 mt-3">You'll be redirected to Flutterwave to complete payment securely.</p>
+            )}
+
+            {paymentMethod === 'PAY_ON_DELIVERY' && (
+              <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200 p-4">
+                <div className="flex gap-2 mb-3">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-sm font-semibold text-amber-800">Before you continue</p>
+                </div>
+                <ul className="text-sm text-amber-700 space-y-1.5 mb-4 list-disc list-inside">
+                  <li>You must be available at the delivery address to receive your order.</li>
+                  <li>Have the full amount ready in cash <span className="font-medium">or</span> be ready to make an instant bank transfer to the rider.</li>
+                  <li>Your order will only be completed once payment is received. Failure to pay will result in the order being returned.</li>
+                </ul>
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={podConfirmed}
+                    onChange={(e) => setPodConfirmed(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-amber-400 text-amber-600 focus:ring-amber-500"
+                  />
+                  <span className="text-sm text-amber-800 font-medium">
+                    I confirm I will be available and ready to pay{deliveryFee > 0 ? ` ${formatNGN(total)}` : ''} on delivery.
+                  </span>
+                </label>
+              </div>
+            )}
           </div>
 
-          <button type="submit" disabled={loading || items.length === 0} className="btn-primary w-full text-base py-4">
-            {loading ? 'Processing…' : deliveryFee > 0 ? `Pay ${formatNGN(total)} securely` : 'Select delivery area to continue'}
+          <button
+            type="submit"
+            disabled={loading || items.length === 0 || !canSubmit}
+            className="btn-primary w-full text-base py-4 disabled:opacity-50"
+          >
+            {loading
+              ? 'Processing…'
+              : !deliveryFee
+              ? 'Select delivery area to continue'
+              : isPod && !podConfirmed
+              ? 'Confirm the checkbox above to continue'
+              : isPod
+              ? `Place order — pay ${formatNGN(total)} on delivery`
+              : `Pay ${formatNGN(total)} securely`}
           </button>
         </form>
 

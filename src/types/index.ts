@@ -101,6 +101,7 @@ export interface CartItem {
 
 // Order
 export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+export type PaymentMethod = 'ONLINE' | 'PAY_ON_DELIVERY';
 export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
 
 export interface OrderItem {
@@ -126,6 +127,7 @@ export interface Order {
   serviceFee: number;
   totalAmount: number;
   paymentStatus: PaymentStatus;
+  paymentMethod: PaymentMethod;
   orderStatus: OrderStatus;
   deliveryAddress: string;
   deliveryCity: string;
