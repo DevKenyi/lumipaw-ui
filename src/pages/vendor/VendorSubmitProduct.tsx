@@ -28,8 +28,10 @@ export default function VendorSubmitProduct() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    const effectivePrice = variants.length > 0 ? Math.min(...variants.map((v) => v.price)) : form.price;
+    const effectiveStock = variants.length > 0 ? variants.reduce((s, v) => s + v.stock, 0) : form.stock;
     try {
-      await vendorApi.submitProduct({ ...form, variants });
+      await vendorApi.submitProduct({ ...form, price: effectivePrice, stock: effectiveStock, variants });
       qc.invalidateQueries({ queryKey: ['vendor-products'] });
       toast.success('Product submitted for admin review!');
       navigate('/vendor/products');

@@ -33,11 +33,21 @@ export default function AdminProducts() {
     queryFn: () => productsApi.adminList({ size: 50 }),
   });
 
+  const buildPayload = () => {
+    const effectivePrice = variants.length > 0
+      ? Math.min(...variants.map((v) => v.price))
+      : form.price;
+    const effectiveStock = variants.length > 0
+      ? variants.reduce((s, v) => s + v.stock, 0)
+      : form.stock;
+    return { ...form, price: effectivePrice, stock: effectiveStock, variants };
+  };
+
   const saveMutation = useMutation({
     mutationFn: () =>
       editing
-        ? productsApi.update(editing.id, { ...form, variants })
-        : productsApi.create({ ...form, variants }),
+        ? productsApi.update(editing.id, buildPayload())
+        : productsApi.create(buildPayload()),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-products'] });
       toast.success(editing ? 'Product updated' : 'Product created');
