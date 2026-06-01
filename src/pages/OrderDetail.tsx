@@ -1,7 +1,10 @@
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, MapPin, Phone, Package } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ChevronLeft, MapPin, Phone, Package, Star } from 'lucide-react';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { ordersApi } from '../api/orders';
+import { reviewsApi } from '../api/reviewsApi';
 import { formatNGN, formatDateTime } from '../utils/format';
 import Badge from '../components/ui/Badge';
 import Spinner from '../components/ui/Spinner';
@@ -9,11 +12,28 @@ import ProductImage from '../components/ui/ProductImage';
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
+  const qc = useQueryClient();
+  const [ratings, setRatings] = useState<Record<string, number>>({});
+  const [comments, setComments] = useState<Record<string, string>>({});
+  const [submitted, setSubmitted] = useState<Record<string, boolean>>({});
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['order', id],
     queryFn: () => ordersApi.getById(id!),
     enabled: !!id,
+  });
+
+  const reviewMutation = useMutation({
+    mutationFn: ({ productId, rating, comment }: { productId: string; rating: number; comment: string }) =>
+      reviewsApi.submit(productId, { rating, comment: comment || undefined }),
+    onSuccess: (_, { productId }) => {
+      setSubmitted((s) => ({ ...s, [productId]: true }));
+      qc.invalidateQueries({ queryKey: ['reviews'] });
+      toast.success('Review submitted — thank you!');
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message ?? 'Could not submit review');
+    },
   });
 
   const order = data?.data.data;
@@ -124,6 +144,67 @@ export default function OrderDetail() {
           )}
         </div>
       </div>
+
+      {/* Rate your items — only for delivered orders */}
+      {order.orderStatus === 'DELIVERED' && (
+        <div className="card p-5">
+          <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Star size={16} className="text-brand-600" />
+            Rate your items
+          </h2>
+          <div className="space-y-5">
+            {order.items.map((item) => (
+              <div key={item.id} className="flex gap-3">
+                <ProductImage
+                  src={item.productImageUrl}
+                  alt={item.productName}
+                  className="w-12 h-12 rounded-xl object-cover bg-gray-50 border border-gray-100 shrink-0"
+                />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">{item.productName}</p>
+                  {item.variantLabel && <p className="text-xs text-brand-600">{item.variantLabel}</p>}
+
+                  {submitted[item.productId] ? (
+                    <p className="text-xs text-green-600 mt-2 font-medium">✓ Review submitted</p>
+                  ) : (
+                    <div className="mt-2 space-y-2">
+                      {/* Star picker */}
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <button key={s} type="button" onClick={() => setRatings((r) => ({ ...r, [item.productId]: s }))}>
+                            <Star className={`h-5 w-5 transition-colors ${s <= (ratings[item.productId] ?? 0) ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-200 hover:fill-amber-200 hover:text-amber-200'}`} />
+                          </button>
+                        ))}
+                        {ratings[item.productId] && (
+                          <span className="text-xs text-gray-500 ml-1">{['', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'][ratings[item.productId]]}</span>
+                        )}
+                      </div>
+                      <textarea
+                        value={comments[item.productId] ?? ''}
+                        onChange={(e) => setComments((c) => ({ ...c, [item.productId]: e.target.value }))}
+                        placeholder="Leave a comment (optional)"
+                        className="input resize-none text-sm"
+                        rows={2}
+                      />
+                      <button
+                        disabled={!ratings[item.productId] || reviewMutation.isPending}
+                        onClick={() => reviewMutation.mutate({
+                          productId: item.productId,
+                          rating: ratings[item.productId],
+                          comment: comments[item.productId] ?? '',
+                        })}
+                        className="btn-primary text-sm py-1.5 disabled:opacity-40"
+                      >
+                        Submit review
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,8 +4,9 @@ import { ShoppingCart, ArrowLeft, Star, Package } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { productsApi } from '../api/products';
+import { reviewsApi } from '../api/reviewsApi';
 import { useCartStore } from '../store/cartStore';
-import { formatNGN } from '../utils/format';
+import { formatNGN, formatDateTime } from '../utils/format';
 import Spinner from '../components/ui/Spinner';
 import ProductImage from '../components/ui/ProductImage';
 import type { ProductVariant } from '../types';
@@ -63,8 +64,14 @@ export default function ProductDetail() {
           <h1 className="text-3xl font-bold text-gray-900 mb-3">{product.name}</h1>
 
           <div className="flex items-center gap-2 mb-4">
-            {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />)}
-            <span className="text-sm text-gray-400">(12 reviews)</span>
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} className={`h-4 w-4 ${i < Math.round(product.averageRating ?? 0) ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-200'}`} />
+            ))}
+            <span className="text-sm text-gray-500">
+              {product.reviewCount > 0
+                ? <>{product.averageRating.toFixed(1)} <span className="text-gray-400">({product.reviewCount} review{product.reviewCount !== 1 ? 's' : ''})</span></>
+                : <span className="text-gray-400">No reviews yet</span>}
+            </span>
           </div>
 
           <p className="text-4xl font-bold text-gray-900 mb-2">
@@ -153,6 +160,53 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
+
+      <ReviewsSection productId={id!} />
+    </div>
+  );
+}
+
+function ReviewsSection({ productId }: { productId: string }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ['reviews', productId],
+    queryFn: () => reviewsApi.getByProduct(productId, { size: 10 }),
+  });
+
+  const reviews = data?.data.data.content ?? [];
+
+  return (
+    <div className="mt-12 border-t border-gray-100 pt-10">
+      <h2 className="text-xl font-bold text-gray-900 mb-6">
+        Customer Reviews {reviews.length > 0 && <span className="text-gray-400 font-normal text-base">({reviews.length})</span>}
+      </h2>
+
+      {isLoading ? (
+        <div className="flex justify-center py-8"><Spinner /></div>
+      ) : reviews.length === 0 ? (
+        <div className="text-center py-10 text-gray-400">
+          <Star className="h-8 w-8 mx-auto mb-2 text-gray-200" />
+          <p>No reviews yet. Purchase this product to leave the first review.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {reviews.map((r) => (
+            <div key={r.id} className="card p-4">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm">{r.customerName}</p>
+                  <div className="flex items-center gap-0.5 mt-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={`h-3.5 w-3.5 ${i < r.rating ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-200'}`} />
+                    ))}
+                  </div>
+                </div>
+                <span className="text-xs text-gray-400">{formatDateTime(r.createdAt)}</span>
+              </div>
+              {r.comment && <p className="text-sm text-gray-600 leading-relaxed">{r.comment}</p>}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

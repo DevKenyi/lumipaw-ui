@@ -44,9 +44,14 @@ export default function ProductCard({ product }: { product: Product }) {
 
         <div className="flex items-center gap-1 mb-3">
           {[...Array(5)].map((_, i) => (
-            <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
+            <Star
+              key={i}
+              className={`h-3 w-3 ${i < Math.round(product.averageRating ?? 0) ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-200'}`}
+            />
           ))}
-          <span className="text-xs text-gray-400 ml-1">(12)</span>
+          <span className="text-xs text-gray-400 ml-1">
+            {product.reviewCount > 0 ? `(${product.reviewCount})` : 'No reviews'}
+          </span>
         </div>
 
         {hasVariants && (

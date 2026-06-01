@@ -65,6 +65,17 @@ export interface Product {
   vendorBusinessName: string | null;
   approvalStatus: ApprovalStatus;
   rejectionReason: string | null;
+  reviewCount: number;
+  averageRating: number;
+}
+
+export interface Review {
+  id: string;
+  productId: string;
+  customerName: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
 }
 
 // Customer
