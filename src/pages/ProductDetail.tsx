@@ -1,6 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ShoppingCart, ArrowLeft, Star, Package } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Star, Package, MessageCircle } from 'lucide-react';
+
+// Replace with your actual WhatsApp business number (digits only, no + or spaces)
+const WHATSAPP_NUMBER = '2348000000000';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { productsApi } from '../api/products';
@@ -113,11 +116,11 @@ export default function ProductDetail() {
 
           <div className="flex items-center gap-2 mb-6">
             <Package className="h-4 w-4 text-gray-400" />
-            <span className={`text-sm font-medium ${isInStock ? 'text-green-600' : 'text-red-500'}`}>
+            <span className={`text-sm font-medium ${isInStock ? 'text-orange-600' : 'text-red-500'}`}>
               {hasVariants && !selectedVariant
                 ? 'Select an option to see stock'
                 : isInStock
-                ? `${displayStock} in stock`
+                ? `🔥 Only ${displayStock} left in stock`
                 : 'Out of stock'}
             </span>
           </div>
@@ -142,12 +145,26 @@ export default function ProductDetail() {
             </div>
           )}
 
+          {/* WhatsApp ordering */}
+          <div className="mb-6 p-4 rounded-2xl bg-green-50 border border-green-100">
+            <p className="text-sm font-semibold text-green-800 mb-2.5">Need help or want to order via WhatsApp?</p>
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hi! I'm interested in buying *${product.name}*${selectedVariant ? ` (${selectedVariant.label})` : ''}. Can you help me place an order?`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold text-sm transition-colors"
+            >
+              <MessageCircle className="h-4 w-4" />
+              Chat on WhatsApp
+            </a>
+          </div>
+
           <div className="grid grid-cols-2 gap-3 pt-6 border-t border-gray-100">
             {[
-              ['🚚', 'Fast Delivery', 'Lagos same-day'],
-              ['🔒', 'Secure Payment', 'Paystack protected'],
-              ['✅', 'Authentic', 'Quality guaranteed'],
-              ['📦', 'Easy Returns', '7-day policy'],
+              ['🚚', 'Fast Delivery', 'Same day in Abuja & Lagos'],
+              ['🔒', 'Secure Payment', 'Flutterwave protected'],
+              ['✅', 'Genuine Product', '100% authentic'],
+              ['🗺️', 'Nationwide', 'Delivered to all 36 states'],
             ].map(([icon, title, desc]) => (
               <div key={title} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
                 <span className="text-xl">{icon}</span>
