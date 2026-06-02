@@ -10,6 +10,7 @@ import { deliveryZonesApi } from '../api/deliveryZonesApi';
 import { formatNGN } from '../utils/format';
 import { OTHER_STATES_FEE } from '../utils/deliveryZones';
 import ProductImage from '../components/ui/ProductImage';
+import DatePicker from '../components/ui/DatePicker';
 import Spinner from '../components/ui/Spinner';
 
 const NIGERIAN_STATES = [
@@ -245,15 +246,12 @@ export default function Checkout() {
                   <label className="block text-sm font-semibold text-amber-800 mb-1.5">
                     When would you like your order delivered? <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={preferredDeliveryDate}
+                    onChange={setPreferredDeliveryDate}
                     min={minDateStr}
-                    onChange={(e) => setPreferredDeliveryDate(e.target.value)}
-                    className="input border-amber-300 focus:border-amber-500 focus:ring-amber-500"
-                    required={isPod}
                   />
-                  <p className="text-xs text-amber-600 mt-1">
+                  <p className="text-xs text-amber-600 mt-1.5">
                     We'll send you a reminder the day before your chosen date.
                   </p>
                 </div>
