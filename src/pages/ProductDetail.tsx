@@ -2,8 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ShoppingCart, ArrowLeft, Star, Package, MessageCircle } from 'lucide-react';
 
-// Replace with your actual WhatsApp business number (digits only, no + or spaces)
-const WHATSAPP_NUMBER = '2348000000000';
+const WHATSAPP_NUMBER = '2348131030388';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { productsApi } from '../api/products';

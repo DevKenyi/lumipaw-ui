@@ -3,12 +3,15 @@ import { ShoppingCart, User, LogOut, LayoutDashboard, Menu, X } from 'lucide-rea
 import { useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
+import NotificationBell from '../NotificationBell';
+import { usePushNotifications } from '../../hooks/usePushNotifications';
 
 export default function Navbar() {
   const { isAuthenticated, isAdmin, isVendor, user, logout } = useAuthStore();
   const totalItems = useCartStore((s) => s.totalItems());
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  usePushNotifications();
 
   const handleLogout = () => {
     logout();
@@ -41,6 +44,7 @@ export default function Navbar() {
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
+            {isAuthenticated && <NotificationBell />}
             <Link to="/cart" className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors">
               <ShoppingCart className="h-5 w-5 text-gray-700" />
               {totalItems > 0 && (
