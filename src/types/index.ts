@@ -135,6 +135,7 @@ export interface Order {
   phone: string;
   alternatePhone: string;
   notes: string;
+  preferredDeliveryDate?: string;
   createdAt: string;
   updatedAt: string;
 }

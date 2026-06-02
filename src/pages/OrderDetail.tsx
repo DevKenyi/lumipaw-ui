@@ -139,6 +139,12 @@ export default function OrderDetail() {
               )}
             </div>
           )}
+          {order.preferredDeliveryDate && (
+            <div className="flex items-center gap-1.5 text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-2">
+              <span>📅</span>
+              <span>Preferred delivery: <strong>{new Date(order.preferredDeliveryDate).toLocaleDateString('en-NG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong></span>
+            </div>
+          )}
           {order.notes && (
             <p className="text-gray-500 italic pt-1">"{order.notes}"</p>
           )}

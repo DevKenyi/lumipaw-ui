@@ -2,7 +2,7 @@ import api from './axios';
 import type { ApiResponse, PageResponse, Order } from '../types';
 
 export const ordersApi = {
-  create: (data: { items: { productId: string; variantId?: string | null; quantity: number }[]; deliveryAddress?: string; deliveryCity?: string; deliveryState?: string; phone?: string; alternatePhone?: string; notes?: string; paymentMethod?: string }) =>
+  create: (data: { items: { productId: string; variantId?: string | null; quantity: number }[]; deliveryAddress?: string; deliveryCity?: string; deliveryState?: string; phone?: string; alternatePhone?: string; notes?: string; paymentMethod?: string; preferredDeliveryDate?: string }) =>
     api.post<ApiResponse<Order>>('/api/orders', data),
 
   myOrders: (params?: { page?: number; size?: number }) =>

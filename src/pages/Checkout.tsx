@@ -29,10 +29,15 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('ONLINE');
   const [podConfirmed, setPodConfirmed] = useState(false);
+  const [preferredDeliveryDate, setPreferredDeliveryDate] = useState('');
   const [form, setForm] = useState({
     deliveryAddress: '', deliveryCity: '', deliveryState: '',
     phone: '', alternatePhone: '', notes: '',
   });
+
+  const minDeliveryDate = new Date();
+  minDeliveryDate.setDate(minDeliveryDate.getDate() + 1);
+  const minDateStr = minDeliveryDate.toISOString().split('T')[0];
 
   const { data: zonesData, isLoading: zonesLoading } = useQuery({
     queryKey: ['delivery-zones'],
@@ -67,7 +72,7 @@ export default function Checkout() {
   const total = sub + serviceFee + deliveryFee;
 
   const isPod = paymentMethod === 'PAY_ON_DELIVERY';
-  const canSubmit = deliveryFee > 0 && (!isPod || podConfirmed);
+  const canSubmit = deliveryFee > 0 && (!isPod || (podConfirmed && !!preferredDeliveryDate));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,6 +87,7 @@ export default function Checkout() {
         })),
         ...form,
         paymentMethod,
+        preferredDeliveryDate: preferredDeliveryDate || undefined,
       });
       const orderId = orderRes.data.data.id;
 
@@ -234,6 +240,24 @@ export default function Checkout() {
                   <li>Have the full amount ready in cash <span className="font-medium">or</span> be ready to make an instant bank transfer to the rider.</li>
                   <li>Your order will only be completed once payment is received. Failure to pay will result in the order being returned.</li>
                 </ul>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-amber-800 mb-1.5">
+                    When would you like your order delivered? <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={preferredDeliveryDate}
+                    min={minDateStr}
+                    onChange={(e) => setPreferredDeliveryDate(e.target.value)}
+                    className="input border-amber-300 focus:border-amber-500 focus:ring-amber-500"
+                    required={isPod}
+                  />
+                  <p className="text-xs text-amber-600 mt-1">
+                    We'll send you a reminder the day before your chosen date.
+                  </p>
+                </div>
+
                 <label className="flex items-start gap-2.5 cursor-pointer">
                   <input
                     type="checkbox"
@@ -258,6 +282,8 @@ export default function Checkout() {
               ? 'Processing…'
               : !deliveryFee
               ? 'Select delivery area to continue'
+              : isPod && !preferredDeliveryDate
+              ? 'Choose a delivery date to continue'
               : isPod && !podConfirmed
               ? 'Confirm the checkbox above to continue'
               : isPod
