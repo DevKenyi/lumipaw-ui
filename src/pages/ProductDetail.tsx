@@ -1,9 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ShoppingCart, ArrowLeft, Star, Package, MessageCircle } from 'lucide-react';
+import { useState } from 'react';
 
 const WHATSAPP_NUMBER = '2348131030388';
-import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { productsApi } from '../api/products';
 import { reviewsApi } from '../api/reviewsApi';

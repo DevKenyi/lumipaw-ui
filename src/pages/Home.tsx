@@ -53,10 +53,10 @@ export default function Home() {
           <div className="absolute bottom-10 right-10 text-9xl">🐱</div>
           <div className="absolute top-1/2 right-1/4 text-7xl">🐾</div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 relative">
           <div className="max-w-2xl">
             <span className="badge bg-white/20 text-white mb-4">🇳🇬 Delivering across Nigeria</span>
-            <h1 className="text-5xl sm:text-6xl font-bold leading-tight mb-4">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-4">
               Premium Pet Food<br />
               <span className="text-brand-300">Delivered Across Nigeria</span>
             </h1>

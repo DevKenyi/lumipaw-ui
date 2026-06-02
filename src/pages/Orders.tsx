@@ -31,12 +31,12 @@ export default function Orders() {
         <div className="space-y-4">
           {orders.map((order) => (
             <div key={order.id} className="card p-5">
-              <div className="flex items-start justify-between mb-4">
-                <div>
+              <div className="flex items-start justify-between gap-2 mb-4">
+                <div className="min-w-0">
                   <p className="font-semibold text-gray-900">Order #{order.id.substring(0, 8).toUpperCase()}</p>
                   <p className="text-sm text-gray-500 mt-0.5">{formatDateTime(order.createdAt)}</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-1.5 justify-end shrink-0">
                   <Badge label={order.paymentStatus} />
                   <Badge label={order.orderStatus} />
                 </div>
