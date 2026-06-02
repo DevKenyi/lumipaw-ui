@@ -16,10 +16,9 @@ self.addEventListener('notificationclick', event => {
   const target = self.location.origin + path;
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-      for (const client of list) {
-        if ('focus' in client) return client.focus();
-      }
-      if (clients.openWindow) return clients.openWindow(target);
+      const existing = list.find(c => c.url.startsWith(self.location.origin));
+      if (existing) return existing.navigate(target).then(c => c && c.focus());
+      return clients.openWindow(target);
     })
   );
 });
