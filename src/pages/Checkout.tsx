@@ -36,9 +36,7 @@ export default function Checkout() {
     phone: '', alternatePhone: '', notes: '',
   });
 
-  const minDeliveryDate = new Date();
-  minDeliveryDate.setDate(minDeliveryDate.getDate() + 1);
-  const minDateStr = minDeliveryDate.toISOString().split('T')[0];
+  const minDateStr = new Date().toISOString().split('T')[0];
 
   const { data: zonesData, isLoading: zonesLoading } = useQuery({
     queryKey: ['delivery-zones'],
