@@ -249,9 +249,15 @@ export default function Checkout() {
                     onChange={setPreferredDeliveryDate}
                     min={minDateStr}
                   />
-                  <p className="text-xs text-amber-600 mt-1.5">
-                    We'll send you a reminder the day before your chosen date.
-                  </p>
+                  {preferredDeliveryDate && (
+                    <p className="text-xs text-amber-600 mt-1.5">
+                      {preferredDeliveryDate === minDateStr
+                        ? "Your order will be delivered today — make sure you're available."
+                        : preferredDeliveryDate === new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]
+                          ? "We'll send you a reminder later today before your delivery tomorrow."
+                          : "We'll send you a reminder the day before your chosen date."}
+                    </p>
+                  )}
                 </div>
 
                 <label className="flex items-start gap-2.5 cursor-pointer">
