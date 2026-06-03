@@ -69,10 +69,10 @@ export default function AdminProducts() {
 
   const bulkDeleteMutation = useMutation({
     mutationFn: (ids: string[]) => productsApi.bulkDelete(ids),
-    onSuccess: (_, ids) => {
+    onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['admin-products'] });
       setSelected(new Set());
-      toast.success(`${ids.length} product${ids.length > 1 ? 's' : ''} deleted`);
+      toast.success(res.data.data ?? 'Done');
     },
     onError: () => toast.error('Bulk delete failed'),
   });
