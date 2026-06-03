@@ -43,6 +43,8 @@ export interface ProductVariant {
   id: string;
   label: string;
   price: number;
+  vendorPrice: number | null;
+  margin: number | null;
   stock: number;
   active: boolean;
   inStock: boolean;
@@ -54,6 +56,8 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  vendorPrice: number | null;
+  margin: number | null;
   stock: number;
   category: string;
   imageUrl: string;

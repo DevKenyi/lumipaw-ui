@@ -22,6 +22,9 @@ export default function AdminProducts() {
   const [tab, setTab] = useState<'products' | 'submissions'>('products');
   const [rejectModal, setRejectModal] = useState<Product | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [approveModal, setApproveModal] = useState<Product | null>(null);
+  const [approvePrice, setApprovePrice] = useState<number>(0);
+  const [approveVariantPrices, setApproveVariantPrices] = useState<{ id: string; price: number }[]>([]);
   const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
@@ -122,10 +125,35 @@ export default function AdminProducts() {
     queryFn: () => adminVendorApi.pendingProducts({ size: 50 }),
   });
 
+  const openApproveModal = (p: Product) => {
+    setApproveModal(p);
+    if (p.variants.length > 0) {
+      setApproveVariantPrices(p.variants.map((v) => ({ id: v.id, price: v.price })));
+      setApprovePrice(0);
+    } else {
+      setApprovePrice(p.price);
+      setApproveVariantPrices([]);
+    }
+  };
+
   const approveMutation = useMutation({
-    mutationFn: (id: string) => adminVendorApi.approveProduct(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-pending-products'] }); qc.invalidateQueries({ queryKey: ['admin-products'] }); toast.success('Product approved and live'); },
+    mutationFn: ({ id, body }: { id: string; body: { price?: number; variantPrices?: { id: string; price: number }[] } }) =>
+      adminVendorApi.approveProduct(id, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-pending-products'] });
+      qc.invalidateQueries({ queryKey: ['admin-products'] });
+      toast.success('Product approved and live');
+      setApproveModal(null);
+    },
   });
+
+  const handleApprove = () => {
+    if (!approveModal) return;
+    const body = approveModal.variants.length > 0
+      ? { variantPrices: approveVariantPrices }
+      : { price: approvePrice };
+    approveMutation.mutate({ id: approveModal.id, body });
+  };
 
   const rejectMutation = useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) => adminVendorApi.rejectProduct(id, reason),
@@ -174,7 +202,7 @@ export default function AdminProducts() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="font-semibold text-gray-900">{p.name}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{p.category.replace(/_/g, ' ')} · {p.variants.length > 0 ? `${p.variants.length} variants` : formatNGN(p.price)} · stock: {p.variants.length > 0 ? p.variants.reduce((s, v) => s + v.stock, 0) : p.stock}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{p.category.replace(/_/g, ' ')} · {p.variants.length > 0 ? `${p.variants.length} variants` : `vendor price: ${formatNGN(p.vendorPrice ?? p.price)}`} · stock: {p.variants.length > 0 ? p.variants.reduce((s, v) => s + v.stock, 0) : p.stock}</p>
                       {p.vendorBusinessName && (
                         <p className="text-xs text-brand-600 font-medium mt-0.5">by {p.vendorBusinessName}</p>
                       )}
@@ -184,7 +212,7 @@ export default function AdminProducts() {
                         className="flex items-center gap-1 text-sm font-medium text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors">
                         <Eye className="h-4 w-4" /> Preview
                       </button>
-                      <button onClick={() => approveMutation.mutate(p.id)}
+                      <button onClick={() => openApproveModal(p)}
                         className="flex items-center gap-1 text-sm font-medium text-green-600 hover:text-green-800 bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-lg transition-colors">
                         <CheckCircle className="h-4 w-4" /> Approve
                       </button>
@@ -199,7 +227,7 @@ export default function AdminProducts() {
                     <div className="flex flex-wrap gap-1 mt-2">
                       {p.variants.map((v) => (
                         <span key={v.id} className={`badge ${v.active ? 'bg-gray-100 text-gray-600' : 'bg-gray-50 text-gray-400 line-through'}`}>
-                          {v.label} — {formatNGN(v.price)} · {v.stock} in stock
+                          {v.label} — vendor: {formatNGN(v.vendorPrice ?? v.price)} · {v.stock} in stock
                         </span>
                       ))}
                     </div>
@@ -289,7 +317,7 @@ export default function AdminProducts() {
             <div className="flex gap-3 p-5 border-t border-gray-100">
               <button onClick={() => setPreviewProduct(null)} className="btn-secondary flex-1">Close</button>
               <button
-                onClick={() => { approveMutation.mutate(previewProduct.id); setPreviewProduct(null); }}
+                onClick={() => { openApproveModal(previewProduct); setPreviewProduct(null); }}
                 className="btn-primary flex-1 bg-green-600 hover:bg-green-700 justify-center">
                 <CheckCircle className="h-4 w-4" /> Approve
               </button>
@@ -334,7 +362,7 @@ export default function AdminProducts() {
                     className="w-4 h-4 rounded border-gray-300 text-brand-600 cursor-pointer"
                   />
                 </th>
-                {['Product', 'Category', 'Price / Variants', 'Stock', 'Status', ''].map((h) => (
+                {['Product', 'Category', 'Vendor Price', 'Retail / Variants', 'Margin', 'Stock', 'Status', ''].map((h) => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
@@ -358,6 +386,19 @@ export default function AdminProducts() {
                   </td>
                   <td className="px-4 py-3 text-gray-500">{p.category.replace('_', ' ')}</td>
                   <td className="px-4 py-3">
+                    {p.vendorPrice != null ? (
+                      p.variants.length > 0 ? (
+                        <div className="space-y-0.5">
+                          {p.variants.slice(0, 2).map((v) => (
+                            <p key={v.id} className="text-xs text-amber-700">{v.vendorPrice != null ? formatNGN(v.vendorPrice) : '—'}</p>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-sm font-medium text-amber-700">{formatNGN(p.vendorPrice)}</span>
+                      )
+                    ) : <span className="text-xs text-gray-300">—</span>}
+                  </td>
+                  <td className="px-4 py-3">
                     {p.variants.length > 0 ? (
                       <div className="space-y-0.5">
                         {p.variants.slice(0, 3).map((v) => (
@@ -370,6 +411,13 @@ export default function AdminProducts() {
                     ) : (
                       <span className="font-semibold text-gray-900">{formatNGN(p.price)}</span>
                     )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {p.margin != null ? (
+                      <span className={`text-sm font-medium ${p.margin > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                        {formatNGN(p.margin)}
+                      </span>
+                    ) : <span className="text-xs text-gray-300">—</span>}
                   </td>
                   <td className="px-4 py-3">
                     {p.variants.length > 0 ? (
@@ -539,6 +587,85 @@ export default function AdminProducts() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Approve with retail price modal */}
+      {approveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6">
+            <div className="flex items-start gap-3 mb-5">
+              <CheckCircle className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-bold text-gray-900">Approve &amp; set retail price</h3>
+                <p className="text-sm text-gray-500">"{approveModal.name}"</p>
+                {approveModal.vendorBusinessName && (
+                  <p className="text-xs text-brand-600 font-medium mt-0.5">by {approveModal.vendorBusinessName}</p>
+                )}
+              </div>
+            </div>
+
+            {approveModal.variants.length === 0 ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-amber-50 rounded-xl text-sm">
+                  <span className="text-gray-600">Vendor price</span>
+                  <span className="font-bold text-gray-900">{formatNGN(approveModal.vendorPrice ?? approveModal.price)}</span>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Retail price (shown to customers) ₦</label>
+                  <input
+                    type="number" min="0" step="1"
+                    value={approvePrice}
+                    onChange={(e) => setApprovePrice(Number(e.target.value))}
+                    className="input"
+                  />
+                  {approvePrice > 0 && (approveModal.vendorPrice ?? 0) > 0 && (
+                    <p className="text-xs text-green-600 mt-1.5 font-medium">
+                      Margin: {formatNGN(approvePrice - (approveModal.vendorPrice ?? 0))} per unit
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-500 mb-2">Set your retail price for each variant (vendor price shown for reference).</p>
+                {approveModal.variants.map((v, i) => (
+                  <div key={v.id} className="p-3 border border-gray-100 rounded-xl space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-800">{v.label}</span>
+                      <span className="text-xs text-amber-600 font-medium">vendor: {formatNGN(v.vendorPrice ?? v.price)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs text-gray-500 shrink-0">Retail ₦</label>
+                      <input
+                        type="number" min="0" step="1"
+                        value={approveVariantPrices[i]?.price ?? v.price}
+                        onChange={(e) => setApproveVariantPrices((rows) =>
+                          rows.map((r, ri) => ri === i ? { ...r, price: Number(e.target.value) } : r)
+                        )}
+                        className="input text-sm"
+                      />
+                      {approveVariantPrices[i]?.price > 0 && (v.vendorPrice ?? 0) > 0 && (
+                        <span className="text-xs text-green-600 font-medium shrink-0">
+                          +{formatNGN(approveVariantPrices[i].price - (v.vendorPrice ?? 0))}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-3 mt-5">
+              <button onClick={() => setApproveModal(null)} className="btn-secondary flex-1">Cancel</button>
+              <button
+                onClick={handleApprove}
+                disabled={approveMutation.isPending}
+                className="btn-primary flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50"
+              >
+                {approveMutation.isPending ? 'Approving…' : 'Approve & go live'}
+              </button>
+            </div>
           </div>
         </div>
       )}

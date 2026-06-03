@@ -79,8 +79,8 @@ export const adminVendorApi = {
   pendingProducts: (params?: { page?: number; size?: number }) =>
     api.get<ApiResponse<PageResponse<Product>>>('/api/admin/products/pending', { params }),
 
-  approveProduct: (id: string) =>
-    api.post<ApiResponse<Product>>(`/api/admin/products/${id}/approve`),
+  approveProduct: (id: string, body?: { price?: number; variantPrices?: { id: string; price: number }[] }) =>
+    api.post<ApiResponse<Product>>(`/api/admin/products/${id}/approve`, body ?? {}),
 
   rejectProduct: (id: string, reason: string) =>
     api.post<ApiResponse<Product>>(`/api/admin/products/${id}/reject`, { reason }),
