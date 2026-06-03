@@ -27,6 +27,7 @@ export default function AdminProducts() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [variants, setVariants] = useState<ProductVariantInput[]>([]);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-products'],
@@ -65,6 +66,28 @@ export default function AdminProducts() {
     mutationFn: (id: string) => productsApi.delete(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-products'] }); toast.success('Product deleted'); },
   });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (ids: string[]) => productsApi.bulkDelete(ids),
+    onSuccess: (_, ids) => {
+      qc.invalidateQueries({ queryKey: ['admin-products'] });
+      setSelected(new Set());
+      toast.success(`${ids.length} product${ids.length > 1 ? 's' : ''} deleted`);
+    },
+    onError: () => toast.error('Bulk delete failed'),
+  });
+
+  const toggleSelect = (id: string) =>
+    setSelected((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+
+  const toggleAll = () =>
+    setSelected((prev) => prev.size === products.length ? new Set() : new Set(products.map((p) => p.id)));
+
+  const handleBulkDelete = () => {
+    const ids = Array.from(selected);
+    if (!window.confirm(`Delete ${ids.length} selected product${ids.length > 1 ? 's' : ''}? This cannot be undone.`)) return;
+    bulkDeleteMutation.mutate(ids);
+  };
 
   const openCreate = () => {
     setEditing(null);
@@ -281,11 +304,36 @@ export default function AdminProducts() {
       )}
 
       {tab === 'products' && isLoading ? <div className="flex justify-center py-20"><Spinner size="lg" /></div> : tab === 'products' && (
+        <>
+          {selected.size > 0 && (
+            <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4">
+              <span className="text-sm font-medium text-red-700">{selected.size} product{selected.size > 1 ? 's' : ''} selected</span>
+              <div className="flex items-center gap-3">
+                <button onClick={() => setSelected(new Set())} className="text-sm text-gray-500 hover:text-gray-700">Clear</button>
+                <button
+                  onClick={handleBulkDelete}
+                  disabled={bulkDeleteMutation.isPending}
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {bulkDeleteMutation.isPending ? 'Deleting…' : `Delete ${selected.size}`}
+                </button>
+              </div>
+            </div>
+          )}
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[600px]">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
+                <th className="px-4 py-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={products.length > 0 && selected.size === products.length}
+                    onChange={toggleAll}
+                    className="w-4 h-4 rounded border-gray-300 text-brand-600 cursor-pointer"
+                  />
+                </th>
                 {['Product', 'Category', 'Price / Variants', 'Stock', 'Status', ''].map((h) => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
                 ))}
@@ -293,7 +341,15 @@ export default function AdminProducts() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {products.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={p.id} className={`hover:bg-gray-50 transition-colors ${selected.has(p.id) ? 'bg-red-50' : ''}`}>
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selected.has(p.id)}
+                      onChange={() => toggleSelect(p.id)}
+                      className="w-4 h-4 rounded border-gray-300 text-brand-600 cursor-pointer"
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <ProductImage src={p.imageUrl} alt={p.name} className="w-10 h-10 rounded-lg object-cover bg-gray-100" />
@@ -339,6 +395,7 @@ export default function AdminProducts() {
           </table>
           </div>
         </div>
+        </>
       )}
 
       {/* Modal */}

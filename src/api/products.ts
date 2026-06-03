@@ -26,4 +26,7 @@ export const productsApi = {
 
   delete: (id: string) =>
     api.delete<ApiResponse<void>>(`/api/admin/products/${id}`),
+
+  bulkDelete: (ids: string[]) =>
+    api.delete<ApiResponse<string>>('/api/admin/products/bulk', { data: ids }),
 };
