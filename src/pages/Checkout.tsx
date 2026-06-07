@@ -55,14 +55,19 @@ export default function Checkout() {
 
   const isZoned = form.deliveryState in zones;
 
+  const activeZone = (() => {
+    if (!form.deliveryState || !form.deliveryCity) return null;
+    const stateZones = zones[form.deliveryState];
+    if (!stateZones) return null;
+    return stateZones.find((z) => z.locations.includes(form.deliveryCity)) ?? null;
+  })();
+
   const deliveryFee = (() => {
     if (!form.deliveryState) return 0;
+    if (!form.deliveryCity) return 0;
+    if (activeZone) return activeZone.fee;
     const stateZones = zones[form.deliveryState];
     if (!stateZones) return OTHER_STATES_FEE;
-    if (!form.deliveryCity) return 0;
-    for (const zone of stateZones) {
-      if (zone.locations.includes(form.deliveryCity)) return zone.fee;
-    }
     return OTHER_STATES_FEE;
   })();
 
@@ -327,6 +332,9 @@ export default function Checkout() {
                 : <span className="text-gray-400 italic text-xs">Select area</span>
               }
             </div>
+            {activeZone?.partnerName && (
+              <p className="text-xs text-brand-600 -mt-1">Delivered by {activeZone.partnerName}</p>
+            )}
             {deliveryFee > 0 && (
               <div className="flex justify-between font-bold text-gray-900 text-base pt-2 border-t border-gray-100">
                 <span>Total</span><span>{formatNGN(total)}</span>
