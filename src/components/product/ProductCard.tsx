@@ -31,49 +31,53 @@ export default function ProductCard({ product }: { product: Product }) {
         />
         {!product.inStock && !hasVariants && (
           <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-            <span className="badge bg-gray-200 text-gray-600">Out of stock</span>
+            <span className="badge bg-gray-200 text-gray-600 text-xs">Out of stock</span>
           </div>
         )}
-        <div className="absolute top-3 left-3">
-          <span className="badge bg-brand-100 text-brand-700">{product.category.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</span>
+        <div className="absolute top-2 left-2">
+          <span className="badge bg-brand-100 text-brand-700 text-xs px-1.5 py-0.5">
+            {product.category.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+          </span>
         </div>
       </div>
 
-      <div className="p-4 flex flex-col flex-1">
-        <h3 className="font-semibold text-gray-900 text-sm leading-snug line-clamp-2 mb-1">{product.name}</h3>
+      <div className="p-3 sm:p-4 flex flex-col flex-1">
+        <h3 className="font-semibold text-gray-900 text-xs sm:text-sm leading-snug line-clamp-2 mb-1.5">
+          {product.name}
+        </h3>
 
-        <div className="flex items-center gap-1 mb-3">
+        <div className="flex items-center gap-0.5 mb-2">
           {[...Array(5)].map((_, i) => (
             <Star
               key={i}
-              className={`h-3 w-3 ${i < Math.round(product.averageRating ?? 0) ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-200'}`}
+              className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${i < Math.round(product.averageRating ?? 0) ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-200'}`}
             />
           ))}
-          <span className="text-xs text-gray-400 ml-1">
-            {product.reviewCount > 0 ? `(${product.reviewCount})` : 'No reviews'}
-          </span>
+          {product.reviewCount > 0 && (
+            <span className="text-xs text-gray-400 ml-1">({product.reviewCount})</span>
+          )}
         </div>
 
         {hasVariants && (
-          <p className="text-xs text-gray-500 mb-2">{product.variants.length} size options</p>
+          <p className="text-xs text-gray-400 mb-1">{product.variants.length} sizes</p>
         )}
 
-        <div className="mt-auto flex items-center justify-between">
+        <div className="mt-auto flex items-center justify-between gap-1">
           <div>
-            {hasVariants && <p className="text-xs text-gray-400">From</p>}
-            <span className="text-lg font-bold text-gray-900">{formatNGN(minPrice)}</span>
+            {hasVariants && <p className="text-xs text-gray-400 leading-none mb-0.5">From</p>}
+            <span className="text-sm sm:text-base font-bold text-gray-900">{formatNGN(minPrice)}</span>
           </div>
           {hasVariants ? (
-            <span className="flex items-center gap-1 text-xs font-semibold text-brand-600 bg-brand-50 px-3 py-2 rounded-xl">
-              Choose <ChevronRight className="h-3 w-3" />
+            <span className="flex items-center gap-0.5 text-xs font-semibold text-brand-600 bg-brand-50 px-2 py-1.5 rounded-lg">
+              Pick <ChevronRight className="h-3 w-3" />
             </span>
           ) : (
             <button
               onClick={handleAdd}
               disabled={!product.inStock}
-              className="p-2 rounded-xl bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 sm:p-2 rounded-xl bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              <ShoppingCart className="h-4 w-4" />
+              <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </button>
           )}
         </div>
