@@ -98,7 +98,7 @@ export default function Checkout() {
       if (isPod) {
         clearCart();
         toast.success('Order placed! Pay the rider on delivery.');
-        navigate(`/orders/${orderId}`);
+        navigate(`/orders/${orderId}?new=true`);
       } else {
         const payRes = await paymentsApi.initialize(orderId);
         const { authorizationUrl } = payRes.data.data;

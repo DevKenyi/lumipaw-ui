@@ -1,6 +1,6 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, MapPin, Phone, Package, Star } from 'lucide-react';
+import { ChevronLeft, MapPin, Phone, Package, Star, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { ordersApi } from '../api/orders';
@@ -12,6 +12,8 @@ import ProductImage from '../components/ui/ProductImage';
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const isNewOrder = searchParams.get('new') === 'true';
   const qc = useQueryClient();
   const [ratings, setRatings] = useState<Record<string, number>>({});
   const [comments, setComments] = useState<Record<string, string>>({});
@@ -61,6 +63,19 @@ export default function OrderDetail() {
         <ChevronLeft size={16} />
         Back to orders
       </Link>
+
+      {isNewOrder && (
+        <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-2xl px-5 py-4 mb-6">
+          <CheckCircle className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold text-green-800">Order placed successfully!</p>
+            <p className="text-sm text-green-700 mt-0.5">
+              Thank you for your order. Our team has received it and will confirm shortly.
+              {order.paymentMethod === 'PAY_ON_DELIVERY' && ' Have the payment ready when the rider arrives.'}
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
